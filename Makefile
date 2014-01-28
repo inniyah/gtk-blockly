@@ -1,6 +1,6 @@
 PROGRAM=gtk-blockly
 
-all: $(PROGRAM)
+all: blockly/blockly_uncompressed.js $(PROGRAM)
 
 DATA_DIR=$(shell pwd)
 
@@ -35,9 +35,13 @@ i18n/gtk-blockly.pot:
 gettext: i18n/gtk-blockly.pot
 	cd i18n; for F in *.po; do echo "Converting $$F"; msgfmt "$$F" -o `basename "$$F" .po`.mo; done
 
+blockly/blockly_uncompressed.js:
+	cd blockly && ./build.py
+
 clean:
 	rm -fv $(OBJS)
 	rm -fv $(PROGRAM)
 	rm -fv *.o *.a *~
 	rm -fv i18n/*.pot i18n/*.mo
-
+	rm -fv blockly/*_uncompressed.js
+	rm -fv blockly/*_compressed.js

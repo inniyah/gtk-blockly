@@ -83,8 +83,8 @@ handlers:
   secure: always
 
 # Closure library for uncompiled Blockly.
-- url: /closure-library-read-only
-  static_dir: closure-library-read-only
+- url: /closure-library
+  static_dir: closure-library
   secure: always
 
 # Redirect for root directory.
