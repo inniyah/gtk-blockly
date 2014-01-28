@@ -2,12 +2,9 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Blockly Demo: Toolbox</title>
+  <title>GTK Blockly</title>
   <script type="text/javascript" src="blockly/blockly_compressed.js"></script>
   <script type="text/javascript" src="blockly/blocks_compressed.js"></script>
-  <script type="text/javascript" src="blockly/javascript_compressed.js"></script>
-  <script type="text/javascript" src="blockly/python_compressed.js"></script>
-  <script type="text/javascript" src="blockly/lua_compressed.js"></script>
   <script type="text/javascript" src="blockly/msg/js/en.js"></script>
   <style>
     html, body {
@@ -22,16 +19,31 @@
     }
   </style>
   <script>
-    function init() {
+    function load_js(url, callback) {
+      // Adding the script tag to the head
+      var head = document.getElementsByTagName('head')[0];
+      var script = document.createElement('script');
+      script.type = 'text/javascript';
+      script.src = url;
+      // Several callback events for cross browser compatibility.
+      script.onreadystatechange = callback;
+      script.onload = callback;
+      head.appendChild(script);
+    }
+
+    function setup_blockly(xml_toolbox) {
+      document.getElementById("toolbox").innerHTML = xml_toolbox;
       Blockly.inject(document.getElementById('blocklyDiv'),
-        {path: 'blockly/', toolbox: document.getElementById('toolbox')});
+        {path: 'blockly/', toolbox: document.getElementById('full_toolbox')});
     }
   </script>
 </head>
-<body onload="init()">
+<body>
   <div id="blocklyDiv" style="height: 100%; width: 100%;"></div>
 
-  <xml id="toolbox" style="display: none">
+  <xml id="toolbox" style="display: none"></xml>
+  
+  <xml id="full_toolbox" style="display: none">
     <category name="Control">
       <category name="If">
         <block type="controls_if"></block>
@@ -142,6 +154,10 @@
     </category>
     <category name="Variables" custom="VARIABLE"></category>
     <category name="Functions" custom="PROCEDURE"></category>
+    <category name="System">
+      <block type="text_print" inline="false">
+      </block>
+    </category>
     <category name="Library">
       <category name="Randomize">
         <block type="procedures_defnoreturn">

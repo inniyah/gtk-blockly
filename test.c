@@ -59,6 +59,9 @@ static void cb_load_status(WebKitWebView *web_view, GParamSpec * pspec, void * p
 	switch (status) {
 		case WEBKIT_LOAD_FINISHED:
 			printf("WEBKIT_LOAD_FINISHED\n");
+			// Load Javascript Language Translator
+			char load_js_script[] = "load_js(\"blockly/lua_compressed.js\", null); setup_blockly(\"\");";
+			webkit_web_view_execute_script(web_view, load_js_script);
 			break;
 
 		case WEBKIT_LOAD_PROVISIONAL:
@@ -87,14 +90,14 @@ static void cb_load_status(WebKitWebView *web_view, GParamSpec * pspec, void * p
 
 static void cb_execute(GtkWidget* widget, void * p_data) {
 	WebKitWebView * view = (WebKitWebView *)p_data;
-	//char script[] = "Sys.compile(Blockly.Xml.domToPrettyText(Blockly.Xml.workspaceToDom(Blockly.mainWorkspace)));";
-	char script[] = "Sys.print(Blockly.Lua.workspaceToCode());";
+	char script[] = "Sys.print(Blockly.Xml.domToPrettyText(Blockly.Xml.workspaceToDom(Blockly.mainWorkspace)));";
+	//char script[] = "Sys.print(Blockly.Lua.workspaceToCode());";
 	webkit_web_view_execute_script(view, script);
 }
 
 
 static void cb_sysclass_init(JSContextRef ctx, JSObjectRef object) {
-	g_message("Custom class initialize.");
+	g_message("Initializing Sys Namespace.");
 }
 
 
@@ -112,7 +115,7 @@ static JSValueRef cb_sysclass_print(JSContextRef context, JSObjectRef function, 
 		len = JSStringGetMaximumUTF8CStringSize(jsstr);
 		cstr = g_new(char, len);
 		JSStringGetUTF8CString(jsstr, cstr, len);
-		g_print("%s", cstr);
+		g_print("%s\n\n", cstr);
 		g_free(cstr);
 		JSStringRelease(jsstr);
 	}
