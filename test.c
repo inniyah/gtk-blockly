@@ -88,7 +88,7 @@ static void cb_load_status(WebKitWebView *web_view, GParamSpec * pspec, void * p
 static void cb_execute(GtkWidget* widget, void * p_data) {
 	WebKitWebView * view = (WebKitWebView *)p_data;
 	//char script[] = "Sys.compile(Blockly.Xml.domToPrettyText(Blockly.Xml.workspaceToDom(Blockly.mainWorkspace)));";
-	char script[] = "Blockly.JavaScript.INFINITE_LOOP_TRAP = null; Sys.print(Blockly.JavaScript.workspaceToCode());";
+	char script[] = "Sys.print(Blockly.Lua.workspaceToCode());";
 	webkit_web_view_execute_script(view, script);
 }
 
