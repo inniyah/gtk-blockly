@@ -56,20 +56,20 @@ goog.require('goog.labs.Thenable');
  * @see http://promisesaplus.com/
  *
  * @param {function(
- *             this:THIS,
- *             function((TYPE|goog.labs.Promise.<TYPE>|Thenable)),
+ *             this:RESOLVER_CONTEXT,
+ *             function((TYPE|IThenable.<TYPE>|Thenable)),
  *             function(*)): void} resolver
  *     Initialization function that is invoked immediately with {@code resolve}
  *     and {@code reject} functions as arguments. The Promise is resolved or
  *     rejected with the first argument passed to either function.
- * @param {THIS=} opt_context An optional context for executing the resolver
- *     function. If unspecified, the resolver function will be executed in the
- *     default scope.
+ * @param {RESOLVER_CONTEXT=} opt_context An optional context for executing the
+ *     resolver function. If unspecified, the resolver function will be executed
+ *     in the default scope.
  * @constructor
  * @struct
  * @final
  * @implements {goog.labs.Thenable.<TYPE>}
- * @template TYPE,THIS
+ * @template TYPE,RESOLVER_CONTEXT
  */
 goog.labs.Promise = function(resolver, opt_context) {
   /**
@@ -361,18 +361,6 @@ goog.labs.Promise.withResolver = function() {
  * with the rejection reason as argument, and the child Promise will be rejected
  * with the return value (or thrown value) of the callback.
  *
- * @param {(function(this:THIS, TYPE):
- *          (RESULT|goog.labs.Thenable.<RESULT>|Thenable))=} opt_onFulfilled A
- *     function that will be invoked with the fulfillment value if the Promise
- *     is fullfilled.
- * @param {(function(this:THIS, *): *)=} opt_onRejected A function that will be
- *     invoked with the rejection reason if the Promise is rejected.
- * @param {THIS=} opt_context An optional context object that will be the
- *     execution context for the callbacks. By default, functions are executed
- *     in the default calling context.
- * @return {!goog.labs.Promise.<RESULT>} A new Promise that will receive the
- *     result of the fulfillment or rejection callback.
- * @template RESULT,THIS
  * @override
  */
 goog.labs.Promise.prototype.then = function(
@@ -819,7 +807,7 @@ goog.labs.Promise.prototype.executeCallback_ = function(
  * @private
  */
 goog.labs.Promise.prototype.addStackTrace_ = function(err) {
-  if (goog.labs.Promise.LONG_STACK_TRACES && err.stack) {
+  if (goog.labs.Promise.LONG_STACK_TRACES && goog.isString(err.stack)) {
     // Extract the third line of the stack trace, which is the entry for the
     // user function that called into Promise code.
     var trace = err.stack.split('\n', 4)[3];
@@ -843,7 +831,7 @@ goog.labs.Promise.prototype.addStackTrace_ = function(err) {
  */
 goog.labs.Promise.prototype.appendLongStack_ = function(err) {
   if (goog.labs.Promise.LONG_STACK_TRACES &&
-      err && err.stack && this.stack_.length) {
+      err && goog.isString(err.stack) && this.stack_.length) {
     var longTrace = ['Promise trace:'];
 
     for (var promise = this; promise; promise = promise.parent_) {

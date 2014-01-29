@@ -17,6 +17,7 @@ See the COPYING file for details.
 <script src="../base.js"></script>
 <script>
   goog.require('goog.functions');
+  goog.require('goog.string');
   goog.require('goog.testing.PropertyReplacer');
   goog.require('goog.testing.jsunit');
   goog.require('goog.uri.utils');
@@ -81,6 +82,15 @@ function testSplitRelativeUri() {
   assertEquals('q=query&hl=en', utils.getQueryData(uri));
   assertEquals('fragment', utils.getFragmentEncoded(uri));
   assertEquals('fragment', utils.getFragment(uri));
+}
+
+function testSplitBadAuthority() {
+  // This URL has a syntax error per the RFC (port number must be digits, and
+  // host cannot contain a colon except in [...]). This test is solely to
+  // 'document' the current behavior, which may affect application handling
+  // of erroneous URLs.
+  assertEquals(utils.getDomain('http://host:port/'), 'host:port');
+  assertNull(utils.getPort('http://host:port/'));
 }
 
 function testSplitIntoHostAndPath() {
@@ -271,7 +281,7 @@ function testSameDomainNoDomain() {
 
 /**
  * Simple class with a constant toString.
- * @param {string} The result of toString.
+ * @param {string} stringValue The result of toString.
  * @constructor
  */
 function HasString(stringValue) {
@@ -279,6 +289,7 @@ function HasString(stringValue) {
 }
 
 
+/** @override */
 HasString.prototype.toString = function() {
   return this.value_;
 };
