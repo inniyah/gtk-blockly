@@ -42,6 +42,7 @@ clean:
 	rm -fv $(OBJS)
 	rm -fv $(PROGRAM)
 	rm -fv *.o *.a *~
+	rm -fv `find . -name '*.pyc'`
 	rm -fv i18n/*.pot i18n/*.mo
 	rm -fv blockly/*_uncompressed.js
 	rm -fv blockly/*_compressed.js
