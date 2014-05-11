@@ -1,2 +1,5 @@
 Closure Library's canonical repository has moved to
 https://github.com/google/closure-library
+
+Please update your project configuration if you were
+depending on the repository's former location.
