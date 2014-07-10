@@ -7,7 +7,9 @@ goog.provide('Blockly.Msg.hi');
 goog.require('Blockly.Msg');
 
 Blockly.Msg.ADD_COMMENT = "टिप्पणी छोड़ें";
+Blockly.Msg.AUTH = "Please authorize this app to enable your work to be saved and to allow it to be shared by you.";  // untranslated
 Blockly.Msg.CHANGE_VALUE_TITLE = "मान परिवर्तित करें:";
+Blockly.Msg.CHAT = "Chat with your collaborator by typing in this box!";  // untranslated
 Blockly.Msg.COLLAPSE_ALL = "ब्लॉक संक्षिप्त करें";
 Blockly.Msg.COLLAPSE_BLOCK = "ब्लॉक को संक्षिप्त करें";
 Blockly.Msg.COLOUR_BLEND_COLOUR1 = "रंग 1";

@@ -7,7 +7,9 @@ goog.provide('Blockly.Msg.be-tarask');
 goog.require('Blockly.Msg');
 
 Blockly.Msg.ADD_COMMENT = "Дадаць камэнтар";
+Blockly.Msg.AUTH = "Please authorize this app to enable your work to be saved and to allow it to be shared by you.";  // untranslated
 Blockly.Msg.CHANGE_VALUE_TITLE = "Зьмяніць значэньне:";
+Blockly.Msg.CHAT = "Chat with your collaborator by typing in this box!";  // untranslated
 Blockly.Msg.COLLAPSE_ALL = "Згарнуць блёкі";
 Blockly.Msg.COLLAPSE_BLOCK = "Згарнуць блёк";
 Blockly.Msg.COLOUR_BLEND_COLOUR1 = "колер 1";
