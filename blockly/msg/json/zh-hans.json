@@ -5,7 +5,8 @@
             "Liuxinyu970226",
             "Luotiancheng",
             "Qiyue2001",
-            "Xiaomingyan"
+            "Xiaomingyan",
+            "Yfdyh000"
         ]
     },
     "VARIABLES_DEFAULT_NAME": "项",
@@ -23,6 +24,7 @@
     "DISABLE_BLOCK": "禁用块",
     "ENABLE_BLOCK": "启用块",
     "HELP": "帮助",
+    "CHAT": "通过在此框输入与您的合作者沟通！",
     "CHANGE_VALUE_TITLE": "更改值：",
     "NEW_VARIABLE": "新变量...",
     "NEW_VARIABLE_TITLE": "新变量的名称：",
@@ -218,9 +220,9 @@
     "TEXT_CHANGECASE_OPERATOR_TITLECASE": "为首字母大写",
     "TEXT_TRIM_HELPURL": "https://code.google.com/p/blockly/wiki/Text#Trimming_%28removing%29_spaces",
     "TEXT_TRIM_TOOLTIP": "复制这段文字的同时删除两端多余的空格。",
-    "TEXT_TRIM_OPERATOR_BOTH": "从两侧消除空格",
-    "TEXT_TRIM_OPERATOR_LEFT": "从左侧消除空格",
-    "TEXT_TRIM_OPERATOR_RIGHT": "从右侧消除空格",
+    "TEXT_TRIM_OPERATOR_BOTH": "消除两侧空格",
+    "TEXT_TRIM_OPERATOR_LEFT": "消除左侧空格",
+    "TEXT_TRIM_OPERATOR_RIGHT": "消除右侧空格",
     "TEXT_PRINT_HELPURL": "https://code.google.com/p/blockly/wiki/Text#Printing_text",
     "TEXT_PRINT_TITLE": "打印%1",
     "TEXT_PRINT_TOOLTIP": "打印指定的文字、数字或其他值。",

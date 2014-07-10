@@ -42,35 +42,27 @@
 <script type="text/javascript" src="../blocks/procedures.js"></script>
 <!-- Load the Google Drive SDK Realtime libraries. -->
 <script type="text/javascript" src="https://apis.google.com/js/api.js"></script>
-<!-- Load the generic Realtime utility library. -->
-<script type="text/javascript" src="../realtime/realtime-client-utils.js"></script>
-<!-- Load the Blockly apps realtime library. -->
-<!--<script type="text/javascript" src="../realtime/realtime.js"></script>-->
 <script type="text/javascript">
 'use strict';
 // Depending on the URL argument, render as LTR or RTL.
 var rtl = (document.location.search == '?rtl');
 var block = null;
 
+function enableRealtimeSpecificUi() {
+  var realtimeDiv = document.getElementById('realtime');
+  realtimeDiv.display = 'block';
+}
+
 function start() {
-  var startUi = function () {
-    var toolbox = document.getElementById('toolbox');
-    Blockly.inject(document.getElementById('blocklyDiv'),
-            {rtl: rtl, path: '../', toolbox: toolbox});
-  };
-
-  // Set up realtime collaboration.
-  // If you want to use the realtime collaboration features then uncomment out
-  // the next 2 lines and comment out the call to startUi() below.
-//  document.getElementById("realtime").style.display = "block";
-//  Blockly.Realtime.startRealtime(startUi);
-
-  // If you don't want to use the realtime collaboration features then uncomment
-  // out the next line and comment out the call to
-  // Blockly.Realtime.startRealtime() above it.  You can also comment out
-  // (or delete) the loading of the realtime related libraries up above in this
-  // case, if you want.
-  startUi();
+  var toolbox = document.getElementById('toolbox');
+  Blockly.inject(document.getElementById('blocklyDiv'),
+          {rtl: rtl, path: '../', toolbox: toolbox, realtime: false,
+           realtimeOptions:
+             {clientId: 'YOUR CLIENT ID GOES HERE',
+              chatbox: {elementId: 'chatbox'}}});
+  if (Blockly.Realtime.isEnabled()) {
+    enableRealtimeSpecificUi();
+  }
 }
 
 function toXml() {
@@ -341,16 +333,15 @@ h1 {
   <div id="realtime" style="display: none">
 
     <p>Test realtime collaboration by opening
-      <a target="_blank" href="#" onmouseover="this.href = window.location.href">this link in a separate
-        browser window or tab</a> and they will be synchronized.  If this is the first time you've used
-      realtime collaboration with Blockly you'll need to authorize using the following button if it is enabled.</p>
-
-    <button id="authorizeButton">You must authorize</button>
+      <a target="_blank" href="#" onmouseover="this.href = window.location.href">
+        this link</a> in a separate browser window or tab and they will be
+      synchronized.  You can even share the link with a friend!.</p>
 
     <br>
     <br>
 
     <!-- Undo and redo buttons. -->
+    <!-- TODO: Uncomment this when undo/redo are fixed. -->
     <!--
       <button id="undoButton" disabled>Undo</button>
       <button id="redoButton" disabled>Redo</button>
