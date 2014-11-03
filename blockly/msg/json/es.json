@@ -22,6 +22,7 @@
     "ENABLE_BLOCK": "Activar bloque",
     "HELP": "Ayuda",
     "CHAT": "¡Chatea con tu colaborador escribiendo en este cuadro!",
+    "AUTH": "Por favor, autoriza a esta aplicación para que puedas grabar y compartir tu trabajo.",
     "CHANGE_VALUE_TITLE": "Cambiar el valor:",
     "NEW_VARIABLE": "Variable nueva…",
     "NEW_VARIABLE_TITLE": "Nombre de variable nueva:",
