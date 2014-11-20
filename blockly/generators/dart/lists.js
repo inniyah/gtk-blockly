@@ -3,7 +3,7 @@
  * Visual Blocks Language
  *
  * Copyright 2014 Google Inc.
- * https://blockly.googlecode.com/
+ * https://developers.google.com/blockly/
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -248,7 +248,8 @@ Blockly.Dart['lists_setIndex'] = function(block) {
     var code = cacheList();
     var xVar = Blockly.Dart.variableDB_.getDistinctName(
         'tmp_x', Blockly.Variables.NAME_TYPE);
-    code += 'int ' + xVar + ' = new Math.Random().nextInt(' + list + '.length);';
+    code += 'int ' + xVar +
+        ' = new Math.Random().nextInt(' + list + '.length);';
     if (mode == 'SET') {
       code += list + '[' + xVar + '] = ' + value + ';\n';
       return code;

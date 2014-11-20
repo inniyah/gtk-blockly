@@ -1,2 +1,8 @@
-This is a read-only copy of the canonical Blockly repository [https://code.google.com/p/blockly/].
-Please do not issue pull requests here.
+# Blockly
+
+Google's Blockly is a web-based, visual programming editor.  Users can drag
+blocks together to build a programs.  All code is free and open source.
+
+**The project page is https://developers.google.com/blockly/**
+
+![](https://developers.google.com/blockly/sample.png)

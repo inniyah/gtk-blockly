@@ -3,7 +3,7 @@
  * Visual Blocks Language
  *
  * Copyright 2014 Google Inc.
- * https://blockly.googlecode.com/
+ * https://developers.google.com/blockly/
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,11 @@ Blockly.Dart['procedures_defreturn'] = function(block) {
   var funcName = Blockly.Dart.variableDB_.getName(block.getFieldValue('NAME'),
       Blockly.Procedures.NAME_TYPE);
   var branch = Blockly.Dart.statementToCode(block, 'STACK');
+  if (Blockly.Dart.STATEMENT_PREFIX) {
+    branch = Blockly.Dart.prefixLines(
+        Blockly.Dart.STATEMENT_PREFIX.replace(/%1/g,
+        '\'' + block.id + '\''), Blockly.Dart.INDENT) + branch;
+  }
   if (Blockly.Dart.INFINITE_LOOP_TRAP) {
     branch = Blockly.Dart.INFINITE_LOOP_TRAP.replace(/%1/g,
         '\'' + block.id + '\'') + branch;

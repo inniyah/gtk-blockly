@@ -21,7 +21,7 @@
     <script>
       function init() {
         Blockly.inject(document.body,
-            {path: '../../', toolbox: document.getElementById('toolbox')});
+            {toolbox: document.getElementById('toolbox')});
         // Let the top-level application know that Blockly is ready.
         window.parent.blocklyLoaded(Blockly);
       }
@@ -30,8 +30,8 @@
   <body onload="init()">
     <xml id="toolbox" style="display: none">
       <block type="controls_if"></block>
-      <block type="controls_repeat_ext"></block>
       <block type="logic_compare"></block>
+      <block type="controls_repeat_ext"></block>
       <block type="math_number"></block>
       <block type="math_arithmetic"></block>
       <block type="text"></block>

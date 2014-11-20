@@ -3,7 +3,7 @@
  * Visual Blocks Language
  *
  * Copyright 2014 Google Inc.
- * https://blockly.googlecode.com/
+ * https://developers.google.com/blockly/
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,11 +44,11 @@ Blockly.Dart['math_number'] = function(block) {
 Blockly.Dart['math_arithmetic'] = function(block) {
   // Basic arithmetic operators, and power.
   var OPERATORS = {
-    ADD: [' + ', Blockly.Dart.ORDER_ADDITIVE],
-    MINUS: [' - ', Blockly.Dart.ORDER_ADDITIVE],
-    MULTIPLY: [' * ', Blockly.Dart.ORDER_MULTIPLICATIVE],
-    DIVIDE: [' / ', Blockly.Dart.ORDER_MULTIPLICATIVE],
-    POWER: [null, Blockly.Dart.ORDER_NONE]  // Handle power separately.
+    'ADD': [' + ', Blockly.Dart.ORDER_ADDITIVE],
+    'MINUS': [' - ', Blockly.Dart.ORDER_ADDITIVE],
+    'MULTIPLY': [' * ', Blockly.Dart.ORDER_MULTIPLICATIVE],
+    'DIVIDE': [' / ', Blockly.Dart.ORDER_MULTIPLICATIVE],
+    'POWER': [null, Blockly.Dart.ORDER_NONE]  // Handle power separately.
   };
   var tuple = OPERATORS[block.getFieldValue('OP')];
   var operator = tuple[0];
@@ -159,12 +159,13 @@ Blockly.Dart['math_single'] = function(block) {
 Blockly.Dart['math_constant'] = function(block) {
   // Constants: PI, E, the Golden Ratio, sqrt(2), 1/sqrt(2), INFINITY.
   var CONSTANTS = {
-    PI: ['Math.PI', Blockly.Dart.ORDER_UNARY_POSTFIX],
-    E: ['Math.E', Blockly.Dart.ORDER_UNARY_POSTFIX],
-    GOLDEN_RATIO: ['(1 + Math.sqrt(5)) / 2', Blockly.Dart.ORDER_MULTIPLICATIVE],
-    SQRT2: ['Math.SQRT2', Blockly.Dart.ORDER_UNARY_POSTFIX],
-    SQRT1_2: ['Math.SQRT1_2', Blockly.Dart.ORDER_UNARY_POSTFIX],
-    INFINITY: ['double.INFINITY', Blockly.Dart.ORDER_ATOMIC]
+    'PI': ['Math.PI', Blockly.Dart.ORDER_UNARY_POSTFIX],
+    'E': ['Math.E', Blockly.Dart.ORDER_UNARY_POSTFIX],
+    'GOLDEN_RATIO':
+        ['(1 + Math.sqrt(5)) / 2', Blockly.Dart.ORDER_MULTIPLICATIVE],
+    'SQRT2': ['Math.SQRT2', Blockly.Dart.ORDER_UNARY_POSTFIX],
+    'SQRT1_2': ['Math.SQRT1_2', Blockly.Dart.ORDER_UNARY_POSTFIX],
+    'INFINITY': ['double.INFINITY', Blockly.Dart.ORDER_ATOMIC]
   };
   var constant = block.getFieldValue('CONSTANT');
   if (constant != 'INFINITY') {

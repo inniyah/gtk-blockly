@@ -2,7 +2,7 @@
  * Blockly Apps: Maze
  *
  * Copyright 2012 Google Inc.
- * https://blockly.googlecode.com/
+ * https://developers.google.com/blockly/
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,12 +28,16 @@
  */
 var Maze = {};
 
+// Temporary hack to fix bug #349701 in Chrome 34.
+// Harmless for other browsers.
+var CHROME34 = navigator.userAgent.indexOf('Chrome/34') != -1;
+
 // Supported languages.
-BlocklyApps.LANGUAGES = ['ar', 'br', 'ca', 'cs', 'da', 'de', 'el', 'en',
-                         'es', 'eu', 'fa', 'fr', 'gl', 'hu', 'ia', 'is', 'it',
-                         'ja', 'ko', 'lv', 'mk', 'ms', 'nl', 'pl', 'pms',
-                         'pt-br', 'ro', 'ru', 'sk', 'sr', 'sv', 'sw', 'th',
-                         'tr', 'uk', 'vi', 'zh-hans', 'zh-hant'];
+BlocklyApps.LANGUAGES =
+    ['ar', 'br', 'ca', 'cs', 'da', 'de', 'el', 'en', 'es', 'eu', 'fa', 'fr',
+     'gl', 'hu', 'hrx', 'ia', 'is', 'it', 'ja', 'ko', 'lv', 'mk', 'ms', 'nl',
+     'pl', 'pms', 'pt-br', 'ro', 'ru', 'sco', 'sk', 'si', 'sr', 'sv', 'sw',
+     'th', 'tr', 'uk', 'vi', 'zh-hans', 'zh-hant'];
 BlocklyApps.LANG = BlocklyApps.getLang();
 
 document.write('<script type="text/javascript" src="generated/' +
@@ -48,6 +52,9 @@ Maze.MAX_BLOCKS = [undefined, // Level 0.
 Maze.CRASH_STOP = 1;
 Maze.CRASH_SPIN = 2;
 Maze.CRASH_FALL = 3;
+
+// Relative path from Blockly's media directory to Maze's directory.
+Maze.MEDIA_TO_MAZE_PATH = '../apps/maze/';
 
 Maze.SKINS = [
   // sprite: A 1029x51 set of 21 avatar images.
@@ -66,8 +73,8 @@ Maze.SKINS = [
     background: false,
     graph: false,
     look: '#000',
-    winSound: ['apps/maze/win.mp3', 'apps/maze/win.ogg'],
-    crashSound: ['apps/maze/fail_pegman.mp3', 'apps/maze/fail_pegman.ogg'],
+    winSound: ['win.mp3', 'win.ogg'],
+    crashSound: ['fail_pegman.mp3', 'fail_pegman.ogg'],
     crashType: Maze.CRASH_STOP
   },
   {
@@ -78,8 +85,8 @@ Maze.SKINS = [
     // Coma star cluster, photo by George Hatfield, used with permission.
     graph: false,
     look: '#fff',
-    winSound: ['apps/maze/win.mp3', 'apps/maze/win.ogg'],
-    crashSound: ['apps/maze/fail_astro.mp3', 'apps/maze/fail_astro.ogg'],
+    winSound: ['win.mp3', 'win.ogg'],
+    crashSound: ['fail_astro.mp3', 'fail_astro.ogg'],
     crashType: Maze.CRASH_SPIN
   },
   {
@@ -90,8 +97,8 @@ Maze.SKINS = [
     // Spring canopy, photo by Rupert Fleetingly, CC licensed for reuse.
     graph: false,
     look: '#000',
-    winSound: ['apps/maze/win.mp3', 'apps/maze/win.ogg'],
-    crashSound: ['apps/maze/fail_panda.mp3', 'apps/maze/fail_panda.ogg'],
+    winSound: ['win.mp3', 'win.ogg'],
+    crashSound: ['fail_panda.mp3', 'fail_panda.ogg'],
     crashType: Maze.CRASH_FALL
   }
 ];
@@ -396,7 +403,14 @@ Maze.drawMap = function() {
       clipRect.setAttribute('y', y * Maze.SQUARE_SIZE);
 
       tileClip.appendChild(clipRect);
-      svg.appendChild(tileClip);
+      if (CHROME34) {
+        var wrapSvg = Blockly.createSvgElement('svg',
+            {'xmlns': 'http://www.w3.org/2000/svg', 'version': '1.1'}, null);
+        wrapSvg.appendChild(tileClip);
+        svg.appendChild(wrapSvg);
+      } else {
+        svg.appendChild(tileClip);
+      }
       // Tile sprite.
       var tile = document.createElementNS(Blockly.SVG_NS, 'image');
       tile.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href',
@@ -407,7 +421,11 @@ Maze.drawMap = function() {
       tile.setAttribute('clip-path', 'url(#tileClipPath' + tileId + ')');
       tile.setAttribute('x', (x - left) * Maze.SQUARE_SIZE);
       tile.setAttribute('y', (y - top) * Maze.SQUARE_SIZE);
-      svg.appendChild(tile);
+      if (CHROME34) {
+        wrapSvg.appendChild(tile);
+      } else {
+        svg.appendChild(tile);
+      }
       tileId++;
     }
   }
@@ -429,7 +447,14 @@ Maze.drawMap = function() {
   clipRect.setAttribute('width', Maze.PEGMAN_WIDTH);
   clipRect.setAttribute('height', Maze.PEGMAN_HEIGHT);
   pegmanClip.appendChild(clipRect);
-  svg.appendChild(pegmanClip);
+  if (CHROME34) {
+    var wrapSvg = Blockly.createSvgElement('svg',
+        {'xmlns': 'http://www.w3.org/2000/svg', 'version': '1.1'}, null);
+    wrapSvg.appendChild(pegmanClip);
+    svg.appendChild(wrapSvg);
+  } else {
+    svg.appendChild(pegmanClip);
+  }
 
   // Add Pegman.
   var pegmanIcon = document.createElementNS(Blockly.SVG_NS, 'image');
@@ -439,22 +464,17 @@ Maze.drawMap = function() {
   pegmanIcon.setAttribute('height', Maze.PEGMAN_HEIGHT);
   pegmanIcon.setAttribute('width', Maze.PEGMAN_WIDTH * 21); // 49 * 21 = 1029
   pegmanIcon.setAttribute('clip-path', 'url(#pegmanClipPath)');
-  svg.appendChild(pegmanIcon);
+  if (CHROME34) {
+    wrapSvg.appendChild(pegmanIcon);
+  } else {
+    svg.appendChild(pegmanIcon);
+  }
 };
 
 /**
  * Initialize Blockly and the maze.  Called on page load.
  */
 Maze.init = function() {
-  // Measure the height of arrow characters.
-  // Firefox on Vista creates enormously high arrows (80px) for no reason.
-  // TODO: Detect if arrow is printed, or Unicode square is printed.
-  var textElement = document.getElementById('arrowTest');
-  var height = textElement.getBBox().height;
-  Maze.addArrows = height < Blockly.BlockSvg.MIN_BLOCK_Y;
-  var svg = textElement.ownerSVGElement
-  svg.parentNode.removeChild(svg);
-
   BlocklyApps.init();
 
   // Setup the Pegman menu.
@@ -480,13 +500,27 @@ Maze.init = function() {
   }
   Blockly.bindEvent_(window, 'resize', null, Maze.hidePegmanMenu);
   var pegmanButton = document.getElementById('pegmanButton');
-  pegmanButton.addEventListener('mousedown', Maze.showPegmanMenu, true);
-  pegmanButton.addEventListener('touchstart', Maze.showPegmanMenu, true);
+  Blockly.bindEvent_(pegmanButton, 'mousedown', null, Maze.showPegmanMenu);
 
   var rtl = BlocklyApps.isRtl();
+  var blocklyDiv = document.getElementById('blockly');
+  var visualization = document.getElementById('visualization');
+  var onresize = function(e) {
+    var top = visualization.offsetTop;
+    blocklyDiv.style.top = Math.max(10, top - window.pageYOffset) + 'px';
+    blocklyDiv.style.left = rtl ? '10px' : '420px';
+    blocklyDiv.style.width = (window.innerWidth - 440) + 'px';
+  };
+  window.addEventListener('scroll', function() {
+      onresize();
+      Blockly.fireUiEvent(window, 'resize');
+    });
+  window.addEventListener('resize', onresize);
+  onresize();
+
   var toolbox = document.getElementById('toolbox');
   Blockly.inject(document.getElementById('blockly'),
-      {path: '../../',
+      {media: '../../media/',
        maxBlocks: Maze.MAX_BLOCKS,
        rtl: rtl,
        toolbox: toolbox,
@@ -497,25 +531,10 @@ Maze.init = function() {
   Blockly.JavaScript.INFINITE_LOOP_TRAP = '  BlocklyApps.checkTimeout(%1);\n';
   Maze.drawMap();
 
-  var blocklyDiv = document.getElementById('blockly');
-  var visualization = document.getElementById('visualization');
-  var onresize = function(e) {
-    var top = visualization.offsetTop;
-    blocklyDiv.style.top = Math.max(10, top - window.scrollY) + 'px';
-    blocklyDiv.style.left = rtl ? '10px' : '420px';
-    blocklyDiv.style.width = (window.innerWidth - 440) + 'px';
-  };
-  window.addEventListener('scroll', function() {
-      onresize();
-      Blockly.fireUiEvent(window, 'resize');
-    });
-  window.addEventListener('resize', onresize);
-  onresize();
-  Blockly.fireUiEvent(window, 'resize');
-
   var defaultXml =
       '<xml>' +
-      '  <block type="maze_moveForward" x="70" y="70"></block>' +
+      '  <block movable="' + (Maze.LEVEL != 1) + '" type="maze_moveForward" ' +
+      'x="70" y="70"></block>' +
       '</xml>';
   BlocklyApps.loadBlocks(defaultXml);
 
@@ -717,8 +736,9 @@ Maze.levelHelp = function() {
       }
       Maze.levelHelp.initialized7_ = true;
     }
-    if (userBlocks.indexOf('maze_if') == -1 ||
-        userBlocks.indexOf('isPathForward') != -1) {
+    // The hint says to change from 'ahead', but keep the hint visible
+    // until the user chooses 'right'.
+    if (userBlocks.indexOf('isPathRight') == -1) {
       content = document.getElementById('dialogHelpMenu');
       style = {width: '360px', top: '400px'};
       style[Blockly.RTL ? 'right' : 'left'] = '425px';
@@ -756,9 +776,12 @@ Maze.changePegman = function(newSkin) {
  * Save the blocks for a one-time reload.
  */
 Maze.saveToStorage = function() {
-  var xml = Blockly.Xml.workspaceToDom(Blockly.mainWorkspace);
-  var text = Blockly.Xml.domToText(xml);
-  window.sessionStorage.loadOnceBlocks = text;
+  // MSIE 11 does not support sessionStorage on file:// URLs.
+  if (window.sessionStorage) {
+    var xml = Blockly.Xml.workspaceToDom(Blockly.mainWorkspace);
+    var text = Blockly.Xml.domToText(xml);
+    window.sessionStorage.loadOnceBlocks = text;
+  }
 };
 
 /**
@@ -777,7 +800,8 @@ Maze.showPegmanMenu = function() {
   window.setTimeout(function() {
       Maze.pegmanMenuMouse_ = Blockly.bindEvent_(document.body, 'mousedown',
                                                  null, Maze.hidePegmanMenu);
-      }, 0);
+      }, BlocklyApps.DOUBLE_CLICK_TIME);
+
   // Close the skin-changing hint if open.
   if (document.getElementById('dialogHelpSkins').className !=
       'dialogHiddenContent') {
@@ -861,6 +885,11 @@ Maze.runButtonClick = function() {
   }
   runButton.style.display = 'none';
   resetButton.style.display = 'inline';
+  // Prevent double-clicks or double-taps.
+  resetButton.disabled = true;
+  setTimeout(function() {resetButton.disabled = false;},
+             BlocklyApps.DOUBLE_CLICK_TIME);
+
   Blockly.mainWorkspace.traceOn(true);
   Maze.reset(false);
   Maze.execute();
@@ -904,8 +933,14 @@ Maze.updateCapacity = function() {
  * Click the reset button.  Reset the maze.
  */
 Maze.resetButtonClick = function() {
-  document.getElementById('runButton').style.display = 'inline';
+  var runButton = document.getElementById('runButton');
+  runButton.style.display = 'inline';
   document.getElementById('resetButton').style.display = 'none';
+  // Prevent double-clicks or double-taps.
+  runButton.disabled = true;
+  setTimeout(function() {runButton.disabled = false;},
+             BlocklyApps.DOUBLE_CLICK_TIME);
+
   Blockly.mainWorkspace.traceOn(false);
   Maze.reset(false);
   Maze.levelHelp();
@@ -1121,8 +1156,8 @@ Maze.updatePegSpin_ = function(e) {
   }
   var pegSpin = document.getElementById('pegSpin');
   var bBox = BlocklyApps.getBBox_(pegSpin);
-  var x = bBox.x + bBox.width / 2 - window.scrollX;
-  var y = bBox.y + bBox.height / 2 - window.scrollY;
+  var x = bBox.x + bBox.width / 2 - window.pageXOffset;
+  var y = bBox.y + bBox.height / 2 - window.pageYOffset;
   var dx = e.clientX - x;
   var dy = e.clientY - y;
   var angle = Math.atan(dy / dx);

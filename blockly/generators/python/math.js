@@ -3,7 +3,7 @@
  * Visual Blocks Language
  *
  * Copyright 2012 Google Inc.
- * https://blockly.googlecode.com/
+ * https://developers.google.com/blockly/
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,11 +43,11 @@ Blockly.Python['math_number'] = function(block) {
 Blockly.Python['math_arithmetic'] = function(block) {
   // Basic arithmetic operators, and power.
   var OPERATORS = {
-    ADD: [' + ', Blockly.Python.ORDER_ADDITIVE],
-    MINUS: [' - ', Blockly.Python.ORDER_ADDITIVE],
-    MULTIPLY: [' * ', Blockly.Python.ORDER_MULTIPLICATIVE],
-    DIVIDE: [' / ', Blockly.Python.ORDER_MULTIPLICATIVE],
-    POWER: [' ** ', Blockly.Python.ORDER_EXPONENTIATION]
+    'ADD': [' + ', Blockly.Python.ORDER_ADDITIVE],
+    'MINUS': [' - ', Blockly.Python.ORDER_ADDITIVE],
+    'MULTIPLY': [' * ', Blockly.Python.ORDER_MULTIPLICATIVE],
+    'DIVIDE': [' / ', Blockly.Python.ORDER_MULTIPLICATIVE],
+    'POWER': [' ** ', Blockly.Python.ORDER_EXPONENTIATION]
   };
   var tuple = OPERATORS[block.getFieldValue('OP')];
   var operator = tuple[0];
@@ -60,8 +60,7 @@ Blockly.Python['math_arithmetic'] = function(block) {
   // in Python 2 and 3. However, is not an issue since Blockly does not
   // guarantee identical results in all languages.  To do otherwise would
   // require every operator to be wrapped in a function call.  This would kill
-  // legibility of the generated code.  See:
-  // http://code.google.com/p/blockly/wiki/Language
+  // legibility of the generated code.
 };
 
 Blockly.Python['math_single'] = function(block) {
@@ -147,12 +146,13 @@ Blockly.Python['math_single'] = function(block) {
 Blockly.Python['math_constant'] = function(block) {
   // Constants: PI, E, the Golden Ratio, sqrt(2), 1/sqrt(2), INFINITY.
   var CONSTANTS = {
-    PI: ['math.pi', Blockly.Python.ORDER_MEMBER],
-    E: ['math.e', Blockly.Python.ORDER_MEMBER],
-    GOLDEN_RATIO: ['(1 + math.sqrt(5)) / 2', Blockly.Python.ORDER_MULTIPLICATIVE],
-    SQRT2: ['math.sqrt(2)', Blockly.Python.ORDER_MEMBER],
-    SQRT1_2: ['math.sqrt(1.0 / 2)', Blockly.Python.ORDER_MEMBER],
-    INFINITY: ['float(\'inf\')', Blockly.Python.ORDER_ATOMIC]
+    'PI': ['math.pi', Blockly.Python.ORDER_MEMBER],
+    'E': ['math.e', Blockly.Python.ORDER_MEMBER],
+    'GOLDEN_RATIO': ['(1 + math.sqrt(5)) / 2',
+                     Blockly.Python.ORDER_MULTIPLICATIVE],
+    'SQRT2': ['math.sqrt(2)', Blockly.Python.ORDER_MEMBER],
+    'SQRT1_2': ['math.sqrt(1.0 / 2)', Blockly.Python.ORDER_MEMBER],
+    'INFINITY': ['float(\'inf\')', Blockly.Python.ORDER_ATOMIC]
   };
   var constant = block.getFieldValue('CONSTANT');
   if (constant != 'INFINITY') {
@@ -257,7 +257,7 @@ Blockly.Python['math_on_list'] = function(block) {
     case 'AVERAGE':
       var functionName = Blockly.Python.provideFunction_(
           'math_mean',
-          // This operation excludes null and values that are not int or float:',
+          // This operation excludes null and values that aren't int or float:',
           // math_mean([null, null, "aString", 1, 9]) == 5.0.',
           ['def ' + Blockly.Python.FUNCTION_NAME_PLACEHOLDER_ + '(myList):',
            '  localList = [e for e in myList if type(e) in (int, float, long)]',
