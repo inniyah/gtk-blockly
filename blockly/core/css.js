@@ -30,6 +30,37 @@ goog.require('goog.cssom');
 
 
 /**
+ * List of cursors.
+ * @enum {string}
+ */
+Blockly.Css.Cursor = {
+  OPEN: 'handopen',
+  CLOSED: 'handclosed',
+  DELETE: 'handdelete'
+};
+
+/**
+ * Current cursor (cached value).
+ * @type string
+ * @private
+ */
+Blockly.Css.currentCursor_ = '';
+
+/**
+ * Large stylesheet added by Blockly.Css.inject.
+ * @type Element
+ * @private
+ */
+Blockly.Css.styleSheet_ = null;
+
+/**
+ * Path to media directory, with any trailing slash removed.
+ * @type string
+ * @private
+ */
+Blockly.Css.mediaPath_ = '';
+
+/**
  * Inject the CSS into the DOM.  This is preferable over using a regular CSS
  * file since:
  * a) It loads synchronously and doesn't force a redraw later.
@@ -37,11 +68,61 @@ goog.require('goog.cssom');
  * c) The CSS content may be made dynamic depending on init options.
  */
 Blockly.Css.inject = function() {
-  var text = Blockly.Css.CONTENT.join('\n');
+  // Placeholder for cursor rule.  Must be first rule (index 0).
+  var text = '.blocklyDraggable {}\n';
+  if (Blockly.hasCss) {
+    text += Blockly.Css.CONTENT.join('\n');
+  }
   // Strip off any trailing slash (either Unix or Windows).
-  var path = Blockly.pathToMedia.replace(/[\\\/]$/, '');
-  text = text.replace(/<<<PATH>>>/g, path);
-  goog.cssom.addCssText(text);
+  Blockly.Css.mediaPath_ = Blockly.pathToMedia.replace(/[\\\/]$/, '');
+  text = text.replace(/<<<PATH>>>/g, Blockly.Css.mediaPath_);
+  Blockly.Css.styleSheet_ = goog.cssom.addCssText(text).sheet;
+  Blockly.Css.setCursor(Blockly.Css.Cursor.OPEN);
+};
+
+/**
+ * Set the cursor to be displayed when over something draggable.
+ * @param {Blockly.Cursor} cursor Enum.
+ */
+Blockly.Css.setCursor = function(cursor) {
+  if (Blockly.readOnly || Blockly.Css.currentCursor_ == cursor) {
+    return;
+  }
+  Blockly.Css.currentCursor_ = cursor;
+  /*
+    Hotspot coordinates are baked into the CUR file, but they are still
+    required in the CSS due to a Chrome bug.
+    https://code.google.com/p/chromium/issues/detail?id=1446
+  */
+  if (cursor == Blockly.Css.Cursor.OPEN) {
+    var xy = '8 5';
+  } else {
+    var xy = '7 3';
+  }
+  var url = 'url(' + Blockly.Css.mediaPath_ + '/' + cursor +
+      '.cur) ' + xy + ', auto';
+  // There are potentially hundreds of draggable objects.  Changing their style
+  // properties individually is too slow, so change the CSS rule instead.
+  var rule = '.blocklyDraggable {\n  cursor: ' + url + ';\n}\n';
+  goog.cssom.replaceCssRule('', rule, Blockly.Css.styleSheet_, 0);
+  // There is probably only one toolbox, so just change its style property.
+  var toolboxen = document.getElementsByClassName('blocklyToolboxDiv');
+  for (var i = 0, toolbox; toolbox = toolboxen[i]; i++) {
+    if (cursor == Blockly.Css.Cursor.OPEN) {
+      toolbox.style.cursor = '';
+    } else {
+      toolbox.style.cursor = url;
+    }
+  }
+  // Set cursor on the SVG surface as well, so that rapid movements
+  // don't result in cursor changing to an arrow momentarily.
+  if (Blockly.svg) {
+    if (cursor == Blockly.Css.Cursor.OPEN) {
+      Blockly.svg.style.cursor = '';
+    } else {
+      Blockly.svg.style.cursor = url;
+    }
+  }
 };
 
 /**
@@ -55,50 +136,41 @@ Blockly.Css.CONTENT = [
   '}',
 
   '.blocklyWidgetDiv {',
-  '  position: absolute;',
   '  display: none;',
+  '  position: absolute;',
   '  z-index: 999;',
   '}',
 
-  '.blocklyDraggable {',
-    /*
-      Hotspot coordinates are baked into the CUR file, but they are still
-      required in the CSS due to a Chrome bug.
-      https://code.google.com/p/chromium/issues/detail?id=1446
-    */
-  '  cursor: url(<<<PATH>>>/handopen.cur) 8 5, auto;',
-  '}',
-
   '.blocklyResizeSE {',
-  '  fill: #aaa;',
   '  cursor: se-resize;',
+  '  fill: #aaa;',
   '}',
 
   '.blocklyResizeSW {',
-  '  fill: #aaa;',
   '  cursor: sw-resize;',
+  '  fill: #aaa;',
   '}',
 
   '.blocklyResizeLine {',
-  '  stroke-width: 1;',
   '  stroke: #888;',
+  '  stroke-width: 1;',
   '}',
 
   '.blocklyHighlightedConnectionPath {',
-  '  stroke-width: 4px;',
-  '  stroke: #fc3;',
   '  fill: none;',
+  '  stroke: #fc3;',
+  '  stroke-width: 4px;',
   '}',
 
   '.blocklyPathLight {',
   '  fill: none;',
-  '  stroke-width: 2;',
   '  stroke-linecap: round;',
+  '  stroke-width: 2;',
   '}',
 
   '.blocklySelected>.blocklyPath {',
-  '  stroke-width: 3px;',
   '  stroke: #fc3;',
+  '  stroke-width: 3px;',
   '}',
 
   '.blocklySelected>.blocklyPathLight {',
@@ -127,9 +199,9 @@ Blockly.Css.CONTENT = [
 
   '.blocklyText {',
   '  cursor: default;',
+  '  fill: #fff;',
   '  font-family: sans-serif;',
   '  font-size: 11pt;',
-  '  fill: #fff;',
   '}',
 
   '.blocklyNonEditableText>text {',
@@ -148,8 +220,8 @@ Blockly.Css.CONTENT = [
   '}',
 
   '.blocklyEditableText:hover>rect {',
-  '  stroke-width: 2;',
   '  stroke: #fff;',
+  '  stroke-width: 2;',
   '}',
 
   '.blocklyBubbleText {',
@@ -161,9 +233,9 @@ Blockly.Css.CONTENT = [
     drag a block and selected text moves instead.
   */
   '.blocklySvg text {',
+  '  user-select: none;',
   '  -moz-user-select: none;',
   '  -webkit-user-select: none;',
-  '  user-select: none;',
   '  cursor: inherit;',
   '}',
 
@@ -177,8 +249,8 @@ Blockly.Css.CONTENT = [
 
   '.blocklyTooltipBackground {',
   '  fill: #ffffc7;',
-  '  stroke-width: 1px;',
   '  stroke: #d8d8d8;',
+  '  stroke-width: 1px;',
   '}',
 
   '.blocklyTooltipShadow,',
@@ -188,16 +260,16 @@ Blockly.Css.CONTENT = [
   '}',
 
   '.blocklyTooltipText {',
+  '  fill: #000;',
   '  font-family: sans-serif;',
   '  font-size: 9pt;',
-  '  fill: #000;',
   '}',
 
   '.blocklyIconShield {',
   '  cursor: default;',
   '  fill: #00c;',
-  '  stroke-width: 1px;',
   '  stroke: #ccc;',
+  '  stroke-width: 1px;',
   '}',
 
   '.blocklyIconGroup:hover>.blocklyIconShield {',
@@ -211,10 +283,10 @@ Blockly.Css.CONTENT = [
 
   '.blocklyIconMark {',
   '  cursor: default !important;',
+  '  fill: #ccc;',
   '  font-family: sans-serif;',
   '  font-size: 9pt;',
   '  font-weight: bold;',
-  '  fill: #ccc;',
   '  text-anchor: middle;',
   '}',
 
@@ -227,25 +299,25 @@ Blockly.Css.CONTENT = [
   '}',
 
   '.blocklyCommentTextarea {',
+  '  background-color: #ffc;',
+  '  border: 0;',
   '  margin: 0;',
   '  padding: 2px;',
-  '  border: 0;',
   '  resize: none;',
-  '  background-color: #ffc;',
   '}',
 
   '.blocklyHtmlInput {',
+  '  border: none;',
   '  font-family: sans-serif;',
   '  font-size: 11pt;',
-  '  border: none;',
   '  outline: none;',
   '  width: 100%',
   '}',
 
   '.blocklyMutatorBackground {',
   '  fill: #fff;',
-  '  stroke-width: 1;',
   '  stroke: #ddd;',
+  '  stroke-width: 1;',
   '}',
 
   '.blocklyFlyoutBackground {',
@@ -259,8 +331,8 @@ Blockly.Css.CONTENT = [
 
   '.blocklyScrollbarBackground {',
   '  fill: #fff;',
-  '  stroke-width: 1;',
   '  stroke: #e4e4e4;',
+  '  stroke-width: 1;',
   '}',
 
   '.blocklyScrollbarKnob {',
@@ -346,11 +418,17 @@ Blockly.Css.CONTENT = [
   '  background-color: #e4e4e4;',
   '}',
 
+  '.blocklyTreeSeparator {',
+  '  border-bottom: solid #e5e5e5 1px;',
+  '  height: 0px;',
+  '  margin: 5px 0;',
+  '}',
+
   '.blocklyTreeIcon {',
-  '  height: 16px;',
-  '  width: 16px;',
-  '  vertical-align: middle;',
   '  background-image: url(<<<PATH>>>/sprites.png);',
+  '  height: 16px;',
+  '  vertical-align: middle;',
+  '  width: 16px;',
   '}',
 
   '.blocklyTreeIconClosedLtr {',
@@ -446,6 +524,161 @@ Blockly.Css.CONTENT = [
 
   '.blocklyWidgetDiv .goog-palette-cell-selected .goog-palette-colorswatch {',
   '  border: 1px solid #000;',
+  '  color: #fff;',
+  '}',
+
+  /* Copied from: goog/css/datepicker.css */
+  /*
+   * Copyright 2009 The Closure Library Authors. All Rights Reserved.
+   *
+   * Use of this source code is governed by the Apache License, Version 2.0.
+   * See the COPYING file for details.
+   */
+
+  /*
+   * Standard styling for a goog.ui.DatePicker.
+   *
+   * @author arv@google.com (Erik Arvidsson)
+   */
+
+  '.blocklyWidgetDiv .goog-date-picker,',
+  '.blocklyWidgetDiv .goog-date-picker th,',
+  '.blocklyWidgetDiv .goog-date-picker td {',
+  '  font: 13px Arial, sans-serif;',
+  '}',
+
+  '.blocklyWidgetDiv .goog-date-picker {',
+  '  -moz-user-focus: normal;',
+  '  -moz-user-select: none;',
+  '  position: relative;',
+  '  border: 1px solid #000;',
+  '  float: left;',
+  '  padding: 2px;',
+  '  color: #000;',
+  '  background: #c3d9ff;',
+  '  cursor: default;',
+  '}',
+
+  '.blocklyWidgetDiv .goog-date-picker th {',
+  '  text-align: center;',
+  '}',
+
+  '.blocklyWidgetDiv .goog-date-picker td {',
+  '  text-align: center;',
+  '  vertical-align: middle;',
+  '  padding: 1px 3px;',
+  '}',
+
+  '.blocklyWidgetDiv .goog-date-picker-menu {',
+  '  position: absolute;',
+  '  background: threedface;',
+  '  border: 1px solid gray;',
+  '  -moz-user-focus: normal;',
+  '  z-index: 1;',
+  '  outline: none;',
+  '}',
+
+  '.blocklyWidgetDiv .goog-date-picker-menu ul {',
+  '  list-style: none;',
+  '  margin: 0px;',
+  '  padding: 0px;',
+  '}',
+
+  '.blocklyWidgetDiv .goog-date-picker-menu ul li {',
+  '  cursor: default;',
+  '}',
+
+  '.blocklyWidgetDiv .goog-date-picker-menu-selected {',
+  '  background: #ccf;',
+  '}',
+
+  '.blocklyWidgetDiv .goog-date-picker th {',
+  '  font-size: .9em;',
+  '}',
+
+  '.blocklyWidgetDiv .goog-date-picker td div {',
+  '  float: left;',
+  '}',
+
+  '.blocklyWidgetDiv .goog-date-picker button {',
+  '  padding: 0px;',
+  '  margin: 1px 0;',
+  '  border: 0;',
+  '  color: #20c;',
+  '  font-weight: bold;',
+  '  background: transparent;',
+  '}',
+
+  '.blocklyWidgetDiv .goog-date-picker-date {',
+  '  background: #fff;',
+  '}',
+
+  '.blocklyWidgetDiv .goog-date-picker-week,',
+  '.blocklyWidgetDiv .goog-date-picker-wday {',
+  '  padding: 1px 3px;',
+  '  border: 0;',
+  '  border-color: #a2bbdd;',
+  '  border-style: solid;',
+  '}',
+
+  '.blocklyWidgetDiv .goog-date-picker-week {',
+  '  border-right-width: 1px;',
+  '}',
+
+  '.blocklyWidgetDiv .goog-date-picker-wday {',
+  '  border-bottom-width: 1px;',
+  '}',
+
+  '.blocklyWidgetDiv .goog-date-picker-head td {',
+  '  text-align: center;',
+  '}',
+
+  /** Use td.className instead of !important */
+  '.blocklyWidgetDiv td.goog-date-picker-today-cont {',
+  '  text-align: center;',
+  '}',
+
+  /** Use td.className instead of !important */
+  '.blocklyWidgetDiv td.goog-date-picker-none-cont {',
+  '  text-align: center;',
+  '}',
+
+  '.blocklyWidgetDiv .goog-date-picker-month {',
+  '  min-width: 11ex;',
+  '  white-space: nowrap;',
+  '}',
+
+  '.blocklyWidgetDiv .goog-date-picker-year {',
+  '  min-width: 6ex;',
+  '  white-space: nowrap;',
+  '}',
+
+  '.blocklyWidgetDiv .goog-date-picker-monthyear {',
+  '  white-space: nowrap;',
+  '}',
+
+  '.blocklyWidgetDiv .goog-date-picker table {',
+  '  border-collapse: collapse;',
+  '}',
+
+  '.blocklyWidgetDiv .goog-date-picker-other-month {',
+  '  color: #888;',
+  '}',
+
+  '.blocklyWidgetDiv .goog-date-picker-wkend-start,',
+  '.blocklyWidgetDiv .goog-date-picker-wkend-end {',
+  '  background: #eee;',
+  '}',
+
+  /** Use td.className instead of !important */
+  '.blocklyWidgetDiv td.goog-date-picker-selected {',
+  '  background: #c3d9ff;',
+  '}',
+
+  '.blocklyWidgetDiv .goog-date-picker-today {',
+  '  background: #9ab;',
+  '  font-weight: bold !important;',
+  '  border-color: #246 #9bd #9bd #246;',
   '  color: #fff;',
   '}',
 

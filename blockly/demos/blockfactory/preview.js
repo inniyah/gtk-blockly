@@ -1,5 +1,5 @@
 /**
- * Blockly Apps: Block Factory
+ * Blockly Demos: Block Factory
  *
  * Copyright 2013 Google Inc.
  * https://developers.google.com/blockly/
@@ -46,6 +46,7 @@ function updateFunc(type, code) {
   previewBlock.render();
   previewBlock.setMovable(false);
   previewBlock.setDeletable(false);
+  previewBlock.moveBy(15, 10);
 }
 
 /**

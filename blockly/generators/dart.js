@@ -73,8 +73,9 @@ Blockly.Dart.ORDER_NONE = 99;          // (...)
 
 /**
  * Initialise the database of variable names.
+ * @param {!Blockly.Workspace} workspace Workspace to generate code from.
  */
-Blockly.Dart.init = function() {
+Blockly.Dart.init = function(workspace) {
   // Create a dictionary of definitions to be printed before the code.
   Blockly.Dart.definitions_ = Object.create(null);
   // Create a dictionary mapping desired function names in definitions_
@@ -89,7 +90,7 @@ Blockly.Dart.init = function() {
   }
 
   var defvars = [];
-  var variables = Blockly.Variables.allVariables();
+  var variables = Blockly.Variables.allVariables(workspace);
   for (var x = 0; x < variables.length; x++) {
     defvars[x] = 'var ' +
         Blockly.Dart.variableDB_.getName(variables[x],

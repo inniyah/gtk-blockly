@@ -28,11 +28,12 @@
 goog.provide('Blockly');
 
 // Blockly core dependencies.
-goog.require('Blockly.Block');
+goog.require('Blockly.BlockSvg');
 goog.require('Blockly.Connection');
 goog.require('Blockly.FieldAngle');
 goog.require('Blockly.FieldCheckbox');
 goog.require('Blockly.FieldColour');
+goog.require('Blockly.FieldDate');
 goog.require('Blockly.FieldDropdown');
 goog.require('Blockly.FieldImage');
 goog.require('Blockly.FieldTextInput');
@@ -43,7 +44,7 @@ goog.require('Blockly.Procedures');
 goog.require('Blockly.Realtime');
 goog.require('Blockly.Toolbox');
 goog.require('Blockly.WidgetDiv');
-goog.require('Blockly.Workspace');
+goog.require('Blockly.WorkspaceSvg');
 goog.require('Blockly.inject');
 goog.require('Blockly.utils');
 
@@ -53,6 +54,7 @@ goog.require('goog.dom');
 goog.require('goog.events');
 goog.require('goog.string');
 goog.require('goog.ui.ColorPicker');
+goog.require('goog.ui.DatePicker');
 goog.require('goog.ui.tree.TreeControl');
 goog.require('goog.userAgent');
 
@@ -101,26 +103,26 @@ Blockly.SPRITE = {
  */
 Blockly.makeColour = function(hue) {
   return goog.color.hsvToHex(hue, Blockly.HSV_SATURATION,
-      Blockly.HSV_VALUE * 256);
+      Blockly.HSV_VALUE * 255);
 };
 
 /**
- * ENUM for a right-facing value input.  E.g. 'test' or 'return'.
+ * ENUM for a right-facing value input.  E.g. 'set item to' or 'return'.
  * @const
  */
 Blockly.INPUT_VALUE = 1;
 /**
- * ENUM for a left-facing value output.  E.g. 'call random'.
+ * ENUM for a left-facing value output.  E.g. 'random fraction'.
  * @const
  */
 Blockly.OUTPUT_VALUE = 2;
 /**
- * ENUM for a down-facing block stack.  E.g. 'then-do' or 'else-do'.
+ * ENUM for a down-facing block stack.  E.g. 'if-do' or 'else'.
  * @const
  */
 Blockly.NEXT_STATEMENT = 3;
 /**
- * ENUM for an up-facing block stack.  E.g. 'close screen'.
+ * ENUM for an up-facing block stack.  E.g. 'break out of loop'.
  * @const
  */
 Blockly.PREVIOUS_STATEMENT = 4;
@@ -224,6 +226,15 @@ Blockly.mainWorkspace = null;
 Blockly.clipboard_ = null;
 
 /**
+ * Is the mouse dragging a block?
+ * 0 - No drag operation.
+ * 1 - Still inside the sticky DRAG_RADIUS.
+ * 2 - Freely draggable.
+ * @private
+ */
+Blockly.dragMode_ = 0;
+
+/**
  * Wrapper function called when a touch mouseUp occurs during a drag operation.
  * @type {Array.<!Array>}
  * @private
@@ -312,7 +323,7 @@ Blockly.onMouseDown_ = function(e) {
  * @private
  */
 Blockly.onMouseUp_ = function(e) {
-  Blockly.setCursorHand_(false);
+  Blockly.Css.setCursor(Blockly.Css.Cursor.OPEN);
   Blockly.mainWorkspace.dragMode = false;
 
   // Unbind the touch event if it exists.
@@ -408,7 +419,7 @@ Blockly.onKeyDown_ = function(e) {
  * @private
  */
 Blockly.terminateDrag_ = function() {
-  Blockly.Block.terminateDrag_();
+  Blockly.BlockSvg.terminateDrag_();
   Blockly.Flyout.terminateDrag_();
 };
 
@@ -512,8 +523,10 @@ Blockly.hideChaff = function(opt_allowToolbox) {
   Blockly.Tooltip.hide();
   Blockly.WidgetDiv.hide();
   if (!opt_allowToolbox &&
-      Blockly.Toolbox.flyout_ && Blockly.Toolbox.flyout_.autoClose) {
-    Blockly.Toolbox.clearSelection();
+      Blockly.mainWorkspace.toolbox_ &&
+      Blockly.mainWorkspace.toolbox_.flyout_ &&
+      Blockly.mainWorkspace.toolbox_.flyout_.autoClose) {
+    Blockly.mainWorkspace.toolbox_.clearSelection();
   }
 };
 
@@ -527,7 +540,7 @@ Blockly.removeAllRanges = function() {
     var sel = window.getSelection();
     if (sel && sel.removeAllRanges) {
       sel.removeAllRanges();
-      window.setTimeout(function() {
+      setTimeout(function() {
           try {
             window.getSelection().removeAllRanges();
           } catch (e) {
@@ -621,30 +634,6 @@ Blockly.playAudio = function(name, opt_volume) {
 };
 
 /**
- * Set the mouse cursor to be either a closed hand or the default.
- * @param {boolean} closed True for closed hand.
- * @private
- */
-Blockly.setCursorHand_ = function(closed) {
-  if (Blockly.readOnly) {
-    return;
-  }
-  /* Hotspot coordinates are baked into the CUR file, but they are still
-     required due to a Chrome bug.
-     https://code.google.com/p/chromium/issues/detail?id=1446 */
-  var cursor = '';
-  if (closed) {
-    cursor = 'url(' + Blockly.pathToMedia + 'handclosed.cur) 7 3, auto';
-  }
-  if (Blockly.selected) {
-    Blockly.selected.getSvgRoot().style.cursor = cursor;
-  }
-  // Set cursor on the SVG surface as well as block so that rapid movements
-  // don't result in cursor changing to an arrow momentarily.
-  Blockly.svg.style.cursor = cursor;
-};
-
-/**
  * Return an object with all the metrics required to size scrollbars for the
  * main workspace.  The following properties are computed:
  * .viewHeight: Height of the visible rectangle,
@@ -662,7 +651,9 @@ Blockly.setCursorHand_ = function(closed) {
  */
 Blockly.getMainWorkspaceMetrics_ = function() {
   var svgSize = Blockly.svgSize();
-  svgSize.width -= Blockly.Toolbox.width;  // Zero if no Toolbox.
+  if (Blockly.mainWorkspace.toolbox_) {
+    svgSize.width -= Blockly.mainWorkspace.toolbox_.width;
+  }
   var viewWidth = svgSize.width - Blockly.Scrollbar.scrollbarThickness;
   var viewHeight = svgSize.height - Blockly.Scrollbar.scrollbarThickness;
   try {
@@ -688,7 +679,10 @@ Blockly.getMainWorkspaceMetrics_ = function() {
     var topEdge = blockBox.y;
     var bottomEdge = topEdge + blockBox.height;
   }
-  var absoluteLeft = Blockly.RTL ? 0 : Blockly.Toolbox.width;
+  var absoluteLeft = 0;
+  if (!Blockly.RTL && Blockly.mainWorkspace.toolbox_) {
+    absoluteLeft = Blockly.mainWorkspace.toolbox_.width;
+  }
   var metrics = {
     viewHeight: svgSize.height,
     viewWidth: svgSize.width,
@@ -775,9 +769,9 @@ Blockly.getMainWorkspace = function() {
 };
 
 // Export symbols that would otherwise be renamed by Closure compiler.
-if (!window['Blockly']) {
-  window['Blockly'] = {};
+if (!goog.global['Blockly']) {
+  goog.global['Blockly'] = {};
 }
-window['Blockly']['getMainWorkspace'] = Blockly.getMainWorkspace;
-window['Blockly']['addChangeListener'] = Blockly.addChangeListener;
-window['Blockly']['removeChangeListener'] = Blockly.removeChangeListener;
+goog.global['Blockly']['getMainWorkspace'] = Blockly.getMainWorkspace;
+goog.global['Blockly']['addChangeListener'] = Blockly.addChangeListener;
+goog.global['Blockly']['removeChangeListener'] = Blockly.removeChangeListener;

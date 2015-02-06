@@ -27,6 +27,7 @@
 goog.provide('Blockly.FieldAngle');
 
 goog.require('Blockly.FieldTextInput');
+goog.require('goog.math');
 
 
 /**
@@ -182,7 +183,7 @@ Blockly.FieldAngle.prototype.onMouseMove = function(e) {
     // This shouldn't happen, but let's not let this error propogate further.
     return;
   }
-  angle = angle / Math.PI * 180;
+  angle = goog.math.toDegrees(angle);
   // 0: East, 90: North, 180: West, 270: South.
   if (dx < 0) {
     angle += 180;
@@ -208,6 +209,10 @@ Blockly.FieldAngle.prototype.onMouseMove = function(e) {
  */
 Blockly.FieldAngle.prototype.setText = function(text) {
   Blockly.FieldAngle.superClass_.setText.call(this, text);
+  if (!this.textElement_) {
+    // Not rendered yet.
+    return;
+  }
   this.updateGraph_();
   // Insert degree symbol.
   if (Blockly.RTL) {
@@ -227,7 +232,7 @@ Blockly.FieldAngle.prototype.updateGraph_ = function() {
   if (!this.gauge_) {
     return;
   }
-  var angleRadians = Number(this.getText()) / 180 * Math.PI;
+  var angleRadians = goog.math.toRadians(Number(this.getText()));
   if (isNaN(angleRadians)) {
     this.gauge_.setAttribute('d',
         'M ' + Blockly.FieldAngle.HALF + ', ' + Blockly.FieldAngle.HALF);
