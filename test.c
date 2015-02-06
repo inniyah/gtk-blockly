@@ -207,6 +207,7 @@ static const JSStaticFunction sysclass_staticfuncs[] = {
 
 JSObjectRef cb_sysclass_constructor(JSContextRef ctx, JSObjectRef constructor, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception) {
 	g_message("System class constructor");
+	return (JSObjectRef)JSValueMakeNull(ctx);
 }
 
 static const JSClassDefinition sysclass_def =
@@ -283,12 +284,12 @@ int main(int argc, char* argv[]) {
 	// Elements for the menu
 	GtkWidget * menu_bar = gtk_menu_bar_new();
 	GtkWidget * menu_file = gtk_menu_new();
-	GtkWidget * menu_file_file = gtk_menu_item_new_with_mnemonic("_File");
-	GtkWidget * menu_file_new = gtk_image_menu_item_new_from_stock(GTK_STOCK_NEW, NULL);
-	GtkWidget * menu_file_open = gtk_image_menu_item_new_from_stock(GTK_STOCK_OPEN, NULL);
-	GtkWidget * menu_file_exec = gtk_image_menu_item_new_from_stock(GTK_STOCK_EXECUTE, NULL);
+	GtkWidget * menu_file_file = gtk_menu_item_new_with_mnemonic(_("_File"));
+	GtkWidget * menu_file_new = gtk_menu_item_new_with_mnemonic(_("_New"));
+	GtkWidget * menu_file_open = gtk_menu_item_new_with_mnemonic(_("_Open"));
+	GtkWidget * menu_file_exec = gtk_menu_item_new_with_mnemonic(_("_Execute"));
 	GtkWidget * menu_file_sep = gtk_separator_menu_item_new();
-	GtkWidget * menu_file_quit = gtk_image_menu_item_new_from_stock(GTK_STOCK_QUIT, accel_group);
+	GtkWidget * menu_file_quit = gtk_menu_item_new_with_mnemonic(_("_Quit"));
 
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_file_file), menu_file);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu_file), menu_file_new);
