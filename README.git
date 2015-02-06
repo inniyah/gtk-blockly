@@ -1,7 +1,7 @@
 Note to self:
 
 git subtree pull --prefix blockly https://github.com/google/blockly.git master --
-git subtree pull --prefix closure https://code.google.com/p/closure-library/ master --
+git subtree pull --prefix closure-library https://github.com/google/closure-library master --
 
 See:
 http://codehero.co/git-desde-cero-utilizando-git-subtree/
