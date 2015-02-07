@@ -4,8 +4,8 @@ all: blockly/blockly_uncompressed.js $(PROGRAM)
 
 DATA_DIR=$(shell pwd)
 
-C_SOURCES = $(shell find . -name "*.c")
-CPP_SOURCES = $(shell find . -name "*.cpp")
+C_SOURCES = $(shell find . -maxdepth 1 -name "*.c")
+CPP_SOURCES = $(shell find . -maxdepth 1 -name "*.cpp")
 OBJS = $(C_SOURCES:.c=.o) $(CPP_SOURCES:.cpp=.o)
 
 PKG_CONFIG=gtk+-3.0 webkitgtk-3.0 libxml-2.0

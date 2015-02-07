@@ -1,12 +1,15 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <glib.h>
 #include <gtk/gtk.h>
 #include <webkit/webkit.h>
 #include <JavaScriptCore/JavaScript.h>
 #include <gdk/gdkkeysyms.h>
 #include <libxml/parser.h>
 #include <libxml/tree.h>
+
+#include "test.h"
 
 #ifndef LIBXML_TREE_ENABLED
 #error LIBXML_TREE_ENABLED Undefined!
@@ -39,17 +42,21 @@
 /* GDK_KEY_space */
 #endif
 
+
+/* Callback Function for Closing the Window */
 static void cb_destroy_window(GtkWidget* widget, GtkWidget* window) {
 	gtk_main_quit();
 }
 
 
+/* Callback Function for Closing WebKit */
 static gboolean cb_close_web_view(WebKitWebView* webView, GtkWidget* window) {
 	gtk_widget_destroy(window);
 	return TRUE;
 }
 
 
+/* Callback Function for WebKit */
 static void cb_load_status(WebKitWebView *web_view, GParamSpec * pspec, void * p_context) {
 	WebKitLoadStatus status = webkit_web_view_get_load_status (web_view);
 	GObject *object = G_OBJECT (web_view);
@@ -88,7 +95,15 @@ static void cb_load_status(WebKitWebView *web_view, GParamSpec * pspec, void * p
 }
 
 
-static void cb_execute(GtkWidget* widget, void * p_data) {
+/* Callback Function for the Execute Menu Option */
+static void cb_execute(GtkWidget * widget, void * p_data) {
+	WebKitWebView * view = (WebKitWebView *)p_data;
+	char script[] = "Sys.compile(Blockly.Xml.domToPrettyText(Blockly.Xml.workspaceToDom(Blockly.mainWorkspace)));";
+	webkit_web_view_execute_script(view, script);
+}
+
+/* Callback Function for the Print Menu Option */
+static void cb_print(GtkWidget * widget, void * p_data) {
 	WebKitWebView * view = (WebKitWebView *)p_data;
 	char script[] = "Sys.print(Blockly.Xml.domToPrettyText(Blockly.Xml.workspaceToDom(Blockly.mainWorkspace)));";
 	//char script[] = "Sys.print(Blockly.Lua.workspaceToCode());";
@@ -96,21 +111,27 @@ static void cb_execute(GtkWidget* widget, void * p_data) {
 }
 
 
+/* Callback Function */
 static void cb_sysclass_init(JSContextRef ctx, JSObjectRef object) {
 	g_message("Initializing Sys Namespace.");
 }
 
 
+/* Callback Function */
 static void cb_sysclass_finalize(JSObjectRef object) {
 	g_message("Custom class finalize.");
 }
 
+
+/* Sys.print */
+
+/* Sys.print implementation */
 static JSValueRef cb_sysclass_print(JSContextRef context, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef *exception) {
 	/* At least, one argument must be received */
 	if (argumentCount == 1 && JSValueIsString(context, arguments[0])) {
 		/* Converts JSValue to char */
 		size_t len;
-		char *cstr;
+		char * cstr;
 		JSStringRef jsstr = JSValueToStringCopy(context, arguments[0], NULL);
 		len = JSStringGetMaximumUTF8CStringSize(jsstr);
 		cstr = g_new(char, len);
@@ -122,16 +143,47 @@ static JSValueRef cb_sysclass_print(JSContextRef context, JSObjectRef function, 
 	return JSValueMakeUndefined(context);
 }
 
-static void print_element_names(xmlNode * a_node) {
-	xmlNode *cur_node = NULL;
-	for (cur_node = a_node; cur_node; cur_node = cur_node->next) {
-		if (cur_node->type == XML_ELEMENT_NODE) {
-			printf("node type: Element, name: %s\n", cur_node->name);
+
+/* Sys.compile */
+
+static void xml_start_element (GMarkupParseContext * context, const gchar * element_name,
+                               const gchar ** attribute_names, const gchar ** attribute_values, gpointer user_data, GError ** error) {
+	printf("XML: <%s>\n", element_name);
+	const gchar ** name_cursor  = attribute_names;
+	const gchar ** value_cursor = attribute_values;
+
+	if (0 == strcmp (element_name, "block")) {
+		while (*name_cursor) {
+			if (0 == strcmp (*name_cursor, "type")) {
+				gchar * type = g_strdup (*value_cursor);
+				printf("XML:   Block Type: %s\n", type);
+				g_free(type);
+			}
+			name_cursor++;
+			value_cursor++;
 		}
-		print_element_names(cur_node->children);
 	}
 }
 
+static void xml_text (GMarkupParseContext * context, const gchar * text, gsize text_len, gpointer user_data, GError ** error) {
+	/* Note that "text" is not null-terminated */
+	//printf("XML: %*s\n", (int)text_len, text);
+}
+
+static void xml_end_element (GMarkupParseContext * context, const gchar * element_name, gpointer user_data, GError ** error) {
+	printf("XML: </%s>\n", element_name);
+}
+
+/* The list of what handler does what. */
+static GMarkupParser xml_parser = {
+	xml_start_element,
+	xml_end_element,
+	xml_text,
+	NULL,
+	NULL
+};
+
+/* Sys.compile implementation */
 static JSValueRef cb_sysclass_compile(JSContextRef context, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef *exception) {
 	/* At least, one argument must be received */
 	if (argumentCount == 1 && JSValueIsString(context, arguments[0])) {
@@ -143,35 +195,23 @@ static JSValueRef cb_sysclass_compile(JSContextRef context, JSObjectRef function
 		cstr = g_new(char, len);
 		JSStringGetUTF8CString(jsstr, cstr, len);
 
-		//g_print("%s", cstr);
-
-		xmlDoc *doc = NULL;
-		xmlNode *root_element = NULL;
-		LIBXML_TEST_VERSION
-		doc = xmlReadMemory(cstr, strlen(cstr), "noname.xml", NULL, 0);
+		GMarkupParseContext * parse_context = g_markup_parse_context_new ( &xml_parser, 0, NULL, NULL);
+		if (g_markup_parse_context_parse (parse_context, cstr, strlen(cstr), NULL) == FALSE) {
+			printf("Parse failed\n");
+		}
+		g_markup_parse_context_free (parse_context);
 
 		g_free(cstr);
 		JSStringRelease(jsstr);
-
-		if (doc != NULL) {
-			/*Get the root element node */
-			root_element = xmlDocGetRootElement(doc);
-
-			print_element_names(root_element);
-
-			/* free the document */
-			xmlFreeDoc(doc);
-
-			/* Free the global variables that may have been allocated by the parser */
-			xmlCleanupParser();
-		} else {
-			printf("error: could not parse XML\n");
-		}
 
 	}
 	return JSValueMakeUndefined(context);
 }
 
+
+/* Sys.gettext */
+
+/* Sys.gettext implementation */
 static JSValueRef cb_sysclass_gettext(JSContextRef context, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef *exception) {
 	/* At least, one argument must be received */
 	if (argumentCount == 1 && JSValueIsString(context, arguments[0])) {
@@ -197,6 +237,9 @@ static JSValueRef cb_sysclass_gettext(JSContextRef context, JSObjectRef function
 	return value;
 }
 
+
+/* Sys Functions */
+
 /* Class method declarations */
 static const JSStaticFunction sysclass_staticfuncs[] = {
 	{ "print", cb_sysclass_print, kJSPropertyAttributeReadOnly },
@@ -205,13 +248,14 @@ static const JSStaticFunction sysclass_staticfuncs[] = {
 	{ NULL, NULL, 0 }
 };
 
+/* Callback Function */
 JSObjectRef cb_sysclass_constructor(JSContextRef ctx, JSObjectRef constructor, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception) {
 	g_message("System class constructor");
 	return (JSObjectRef)JSValueMakeNull(ctx);
 }
 
-static const JSClassDefinition sysclass_def =
-{
+/* Sys Set of Functions Exported to Javascript */
+static const JSClassDefinition sysclass_def = {
 	0,                       // version
 	kJSClassAttributeNone,   // attributes
 	"SysClass",              // className
@@ -231,6 +275,8 @@ static const JSClassDefinition sysclass_def =
 	NULL                     // convertToType
 };
 
+
+
 /* Callback - JavaScript window object has been cleared */
 static void window_object_cleared_cb(WebKitWebView  *web_view, WebKitWebFrame *frame, gpointer context, gpointer window_object, gpointer user_data) {
 	/* Add classes to JavaScriptCore */
@@ -241,6 +287,7 @@ static void window_object_cleared_cb(WebKitWebView  *web_view, WebKitWebFrame *f
 	JSObjectSetProperty(context, globalObj, str, classObj, kJSPropertyAttributeNone, NULL);
 }
 
+/* Main Program */
 int main(int argc, char* argv[]) {
 	// Initialize GTK+
 	gtk_init(&argc, &argv);
@@ -284,27 +331,30 @@ int main(int argc, char* argv[]) {
 	// Elements for the menu
 	GtkWidget * menu_bar = gtk_menu_bar_new();
 	GtkWidget * menu_file = gtk_menu_new();
-	GtkWidget * menu_file_file = gtk_menu_item_new_with_mnemonic(_("_File"));
-	GtkWidget * menu_file_new = gtk_menu_item_new_with_mnemonic(_("_New"));
-	GtkWidget * menu_file_open = gtk_menu_item_new_with_mnemonic(_("_Open"));
-	GtkWidget * menu_file_exec = gtk_menu_item_new_with_mnemonic(_("_Execute"));
-	GtkWidget * menu_file_sep = gtk_separator_menu_item_new();
-	GtkWidget * menu_file_quit = gtk_menu_item_new_with_mnemonic(_("_Quit"));
+	GtkWidget * menu_file_file  = gtk_menu_item_new_with_mnemonic(_("_File"));
+	GtkWidget * menu_file_new   = gtk_menu_item_new_with_mnemonic(_("_New"));
+	GtkWidget * menu_file_open  = gtk_menu_item_new_with_mnemonic(_("_Open"));
+	GtkWidget * menu_file_print = gtk_menu_item_new_with_mnemonic(_("_Print"));
+	GtkWidget * menu_file_exec  = gtk_menu_item_new_with_mnemonic(_("_Execute"));
+	GtkWidget * menu_file_sep   = gtk_separator_menu_item_new();
+	GtkWidget * menu_file_quit  = gtk_menu_item_new_with_mnemonic(_("_Quit"));
 
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_file_file), menu_file);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu_file), menu_file_new);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu_file), menu_file_open);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu_file), menu_file_print);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu_file), menu_file_exec);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu_file), menu_file_sep);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu_file), menu_file_quit);
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), menu_file_file);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar),  menu_file_file);
 
-	gtk_widget_add_accelerator(menu_file_quit, "activate", accel_group, GDK_KEY_q, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+	gtk_widget_add_accelerator(menu_file_quit,      "activate", accel_group, GDK_KEY_q, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
 
-	g_signal_connect_swapped(G_OBJECT(main_window), "destroy", G_CALLBACK(gtk_main_quit), NULL);
-	g_signal_connect(G_OBJECT(menu_file_quit), "activate", G_CALLBACK(gtk_main_quit), NULL);
+	g_signal_connect_swapped(G_OBJECT(main_window), "destroy",  G_CALLBACK(gtk_main_quit), NULL);
+	g_signal_connect(G_OBJECT(menu_file_quit),      "activate", G_CALLBACK(gtk_main_quit), NULL);
 
-	g_signal_connect(G_OBJECT(menu_file_exec), "activate", G_CALLBACK(cb_execute), webView);
+	g_signal_connect(G_OBJECT(menu_file_exec),      "activate", G_CALLBACK(cb_execute),    webView);
+	g_signal_connect(G_OBJECT(menu_file_print),     "activate", G_CALLBACK(cb_print),      webView);
 
 	GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 	gtk_box_pack_start(GTK_BOX(box), menu_bar, FALSE, FALSE, 3);
