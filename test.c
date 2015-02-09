@@ -95,18 +95,27 @@ static void cb_load_status(WebKitWebView *web_view, GParamSpec * pspec, void * p
 }
 
 
-/* Callback Function for the Execute Menu Option */
-static void cb_execute(GtkWidget * widget, void * p_data) {
-	WebKitWebView * view = (WebKitWebView *)p_data;
-	char script[] = "Sys.compile(Blockly.Xml.domToPrettyText(Blockly.Xml.workspaceToDom(Blockly.mainWorkspace)));";
-	webkit_web_view_execute_script(view, script);
-}
-
 /* Callback Function for the Print Menu Option */
 static void cb_print(GtkWidget * widget, void * p_data) {
 	WebKitWebView * view = (WebKitWebView *)p_data;
 	char script[] = "Sys.print(Blockly.Xml.domToPrettyText(Blockly.Xml.workspaceToDom(Blockly.mainWorkspace)));";
 	//char script[] = "Sys.print(Blockly.Lua.workspaceToCode());";
+	webkit_web_view_execute_script(view, script);
+}
+
+
+/* Callback Function for the Build Menu Option */
+static void cb_build(GtkWidget * widget, void * p_data) {
+	WebKitWebView * view = (WebKitWebView *)p_data;
+	char script[] = "Sys.print(Blockly.Lua.workspaceToCode());";
+	webkit_web_view_execute_script(view, script);
+}
+
+
+/* Callback Function for the Execute Menu Option */
+static void cb_execute(GtkWidget * widget, void * p_data) {
+	WebKitWebView * view = (WebKitWebView *)p_data;
+	char script[] = "Sys.compile(Blockly.Xml.domToPrettyText(Blockly.Xml.workspaceToDom(Blockly.mainWorkspace)));";
 	webkit_web_view_execute_script(view, script);
 }
 
@@ -335,6 +344,7 @@ int main(int argc, char* argv[]) {
 	GtkWidget * menu_file_new   = gtk_menu_item_new_with_mnemonic(_("_New"));
 	GtkWidget * menu_file_open  = gtk_menu_item_new_with_mnemonic(_("_Open"));
 	GtkWidget * menu_file_print = gtk_menu_item_new_with_mnemonic(_("_Print"));
+	GtkWidget * menu_file_build = gtk_menu_item_new_with_mnemonic(_("_Build"));
 	GtkWidget * menu_file_exec  = gtk_menu_item_new_with_mnemonic(_("_Execute"));
 	GtkWidget * menu_file_sep   = gtk_separator_menu_item_new();
 	GtkWidget * menu_file_quit  = gtk_menu_item_new_with_mnemonic(_("_Quit"));
@@ -343,6 +353,7 @@ int main(int argc, char* argv[]) {
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu_file), menu_file_new);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu_file), menu_file_open);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu_file), menu_file_print);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu_file), menu_file_build);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu_file), menu_file_exec);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu_file), menu_file_sep);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu_file), menu_file_quit);
@@ -353,8 +364,9 @@ int main(int argc, char* argv[]) {
 	g_signal_connect_swapped(G_OBJECT(main_window), "destroy",  G_CALLBACK(gtk_main_quit), NULL);
 	g_signal_connect(G_OBJECT(menu_file_quit),      "activate", G_CALLBACK(gtk_main_quit), NULL);
 
-	g_signal_connect(G_OBJECT(menu_file_exec),      "activate", G_CALLBACK(cb_execute),    webView);
 	g_signal_connect(G_OBJECT(menu_file_print),     "activate", G_CALLBACK(cb_print),      webView);
+	g_signal_connect(G_OBJECT(menu_file_build),     "activate", G_CALLBACK(cb_build),      webView);
+	g_signal_connect(G_OBJECT(menu_file_exec),      "activate", G_CALLBACK(cb_execute),    webView);
 
 	GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 	gtk_box_pack_start(GTK_BOX(box), menu_bar, FALSE, FALSE, 3);
