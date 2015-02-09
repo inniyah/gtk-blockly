@@ -1,0 +1,7 @@
+*~
+*.o
+*.a
+*.so
+*_compressed.js
+*_uncompressed.js
+gtk-blockly
