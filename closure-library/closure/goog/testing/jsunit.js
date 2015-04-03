@@ -23,6 +23,7 @@
 
 goog.provide('goog.testing.jsunit');
 
+goog.require('goog.dom.TagName');
 goog.require('goog.testing.TestCase');
 goog.require('goog.testing.TestRunner');
 
@@ -60,7 +61,7 @@ goog.define('goog.testing.jsunit.AUTO_RUN_DELAY_IN_MS', 500);
 
 (function() {
   // Only allow one global test runner to be created on a page.
-  if (goog.global['G_testRunner']) {
+  if (goog.global['G_testRunner'] instanceof goog.testing.TestRunner) {
     return;
   }
 
@@ -124,7 +125,7 @@ goog.define('goog.testing.jsunit.AUTO_RUN_DELAY_IN_MS', 500);
         // Webkit started passing an event object as the only argument to
         // window.onerror.  It doesn't contain an error message, url or line
         // number.  We therefore log as much info as we can.
-        if (error.target && error.target.tagName == 'SCRIPT') {
+        if (error.target && error.target.tagName == goog.dom.TagName.SCRIPT) {
           tr.logError('UNKNOWN ERROR: Script ' + error.target.src);
         } else {
           tr.logError('UNKNOWN ERROR: No error information available.');

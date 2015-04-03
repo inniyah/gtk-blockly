@@ -31,6 +31,7 @@ goog.provide('goog.testing.TestCase.Test');
 
 goog.require('goog.Promise');
 goog.require('goog.Thenable');
+goog.require('goog.dom.TagName');
 goog.require('goog.object');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.stacktrace');
@@ -929,7 +930,6 @@ goog.testing.TestCase.prototype.tearDown = function() {};
 
 /**
  * @return {string} The function name prefix used to auto-discover tests.
- * @protected
  */
 goog.testing.TestCase.prototype.getAutoDiscoveryPrefix = function() {
   return 'test';
@@ -969,28 +969,31 @@ goog.testing.TestCase.prototype.createTestFromAutoDiscoveredFunction =
 
 
 /**
- * Adds any functions defined in the global scope that correspond to
- * lifecycle events for the test case. Overrides setUp, tearDown, setUpPage,
- * tearDownPage and runTests if they are defined.
+ * Adds any functions defined on 'obj' (the global object, by default)
+ * that correspond to lifecycle events for the test case. Overrides
+ * setUp, tearDown, setUpPage, tearDownPage, runTests, and shouldRunTests
+ * if they are defined on 'obj'.
+ * @param {!Object=} opt_obj Defaults to goog.global.
  */
-goog.testing.TestCase.prototype.autoDiscoverLifecycle = function() {
-  if (goog.global['setUp']) {
-    this.setUp = goog.bind(goog.global['setUp'], goog.global);
+goog.testing.TestCase.prototype.autoDiscoverLifecycle = function(opt_obj) {
+  var obj = opt_obj || goog.global;
+  if (obj['setUp']) {
+    this.setUp = goog.bind(obj['setUp'], obj);
   }
-  if (goog.global['tearDown']) {
-    this.tearDown = goog.bind(goog.global['tearDown'], goog.global);
+  if (obj['tearDown']) {
+    this.tearDown = goog.bind(obj['tearDown'], obj);
   }
-  if (goog.global['setUpPage']) {
-    this.setUpPage = goog.bind(goog.global['setUpPage'], goog.global);
+  if (obj['setUpPage']) {
+    this.setUpPage = goog.bind(obj['setUpPage'], obj);
   }
-  if (goog.global['tearDownPage']) {
-    this.tearDownPage = goog.bind(goog.global['tearDownPage'], goog.global);
+  if (obj['tearDownPage']) {
+    this.tearDownPage = goog.bind(obj['tearDownPage'], obj);
   }
-  if (goog.global['runTests']) {
-    this.runTests = goog.bind(goog.global['runTests'], goog.global);
+  if (obj['runTests']) {
+    this.runTests = goog.bind(obj['runTests'], obj);
   }
-  if (goog.global['shouldRunTests']) {
-    this.shouldRunTests = goog.bind(goog.global['shouldRunTests'], goog.global);
+  if (obj['shouldRunTests']) {
+    this.shouldRunTests = goog.bind(obj['shouldRunTests'], obj);
   }
 };
 
@@ -1088,7 +1091,7 @@ goog.testing.TestCase.prototype.cycleTests = function() {
  * @private
  */
 goog.testing.TestCase.prototype.countNumFilesLoaded_ = function() {
-  var scripts = document.getElementsByTagName('script');
+  var scripts = document.getElementsByTagName(goog.dom.TagName.SCRIPT);
   var count = 0;
   for (var i = 0, n = scripts.length; i < n; i++) {
     if (scripts[i].src) {

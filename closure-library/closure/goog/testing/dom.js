@@ -23,6 +23,7 @@ goog.provide('goog.testing.dom');
 goog.require('goog.array');
 goog.require('goog.asserts');
 goog.require('goog.dom');
+goog.require('goog.dom.InputType');
 goog.require('goog.dom.NodeIterator');
 goog.require('goog.dom.NodeType');
 goog.require('goog.dom.TagIterator');
@@ -453,13 +454,14 @@ goog.testing.dom.assertRangeEquals = function(start, startOffset, end,
  */
 goog.testing.dom.getAttributeValue_ = function(node, name) {
   // These hacks avoid nondetermistic results in the following cases:
-  // IE7: document.createElement('input').height returns a random number.
+  // IE7: document.createElement(goog.dom.TagName.INPUT).height returns
+  //      a random number.
   // FF3: getAttribute('disabled') returns different value for <div disabled="">
   //      and <div disabled="disabled">
   // WebKit: Two radio buttons with the same name can't be checked at the same
   //      time, even if only one of them is in the document.
-  if (goog.userAgent.WEBKIT && node.tagName == 'INPUT' &&
-      node['type'] == 'radio' && name == 'checked') {
+  if (goog.userAgent.WEBKIT && node.tagName == goog.dom.TagName.INPUT &&
+      node['type'] == goog.dom.InputType.RADIO && name == 'checked') {
     return false;
   }
   return goog.isDef(node[name]) &&
