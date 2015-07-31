@@ -87,7 +87,6 @@ goog.testing.MockClock = function(opt_autoInstall) {
   if (opt_autoInstall) {
     this.install();
   }
-  goog.testing.MockClock.nextId = 1; // TODO(b/19729551): Remove
 };
 goog.inherits(goog.testing.MockClock, goog.Disposable);
 
@@ -155,11 +154,27 @@ goog.testing.MockClock.prototype.timeoutDelay_ = 0;
 
 
 /**
+ * The real set timeout for reference.
+ * @const @private {!Function}
+ */
+goog.testing.MockClock.REAL_SETTIMEOUT_ = goog.global.setTimeout;
+
+
+/**
  * Installs the MockClock by overriding the global object's implementation of
  * setTimeout, setInterval, clearTimeout and clearInterval.
  */
 goog.testing.MockClock.prototype.install = function() {
   if (!this.replacer_) {
+    if (goog.testing.MockClock.REAL_SETTIMEOUT_ !== goog.global.setTimeout) {
+      if (typeof console !== 'undefined' && console.warn) {
+        console.warn('Non default setTimeout detected. ' +
+            'Use of multiple MockClock instances or other clock mocking ' +
+            'should be avoided due to unspecified behavior and ' +
+            'the resulting fragility.');
+      }
+    }
+
     var r = this.replacer_ = new goog.testing.PropertyReplacer();
     r.set(goog.global, 'setTimeout', goog.bind(this.setTimeout_, this));
     r.set(goog.global, 'setInterval', goog.bind(this.setInterval_, this));
@@ -172,7 +187,8 @@ goog.testing.MockClock.prototype.install = function() {
     // default to setImmediate, which is replaced above. Note that we test for
     // the presence of goog.async.run.forceNextTick to be resilient to the case
     // where tests replace goog.async.run directly.
-    goog.async.run.forceNextTick && goog.async.run.forceNextTick();
+    goog.async.run.forceNextTick && goog.async.run.forceNextTick(
+        goog.testing.MockClock.REAL_SETTIMEOUT_);
 
     // Replace the requestAnimationFrame functions.
     this.replaceRequestAnimationFrame_();
@@ -253,8 +269,6 @@ goog.testing.MockClock.prototype.reset = function() {
   this.nowMillis_ = 0;
   this.timeoutsMade_ = 0;
   this.timeoutDelay_ = 0;
-
-  goog.testing.MockClock.nextId = 1; // TODO(b/19729551): Remove
 
   this.fireResetEvent();
 };
@@ -574,9 +588,6 @@ goog.testing.MockClock.prototype.clearTimeout_ = function(timeoutKey) {
   // For now, we just hackily fail silently if someone tries to clear a timeout
   // key before we've allocated it.
   // Ideally, we should throw an exception if we see this happening.
-  //
-  // TODO(chrishenry): We might also try allocating timeout ids from a global
-  // pool rather than a local pool.
   if (this.isTimeoutSet(timeoutKey)) {
     this.deletedKeys_[timeoutKey] = true;
   }

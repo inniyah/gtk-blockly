@@ -209,6 +209,15 @@ function testSetPropertiesDirectAttributeMap() {
   assertEquals('Should be equal', '#myMap', el.getAttribute('usemap'));
 }
 
+function testSetPropertiesDirectAttributeMapChecksForOwnProperties() {
+  stubs.set(Object.prototype, 'customProp', 'sdflasdf.,m.,<>fsdflas213!@#');
+  var attrs = {'usemap': '#myMap'};
+  var el = goog.dom.createDom(goog.dom.TagName.IMG);
+
+  var res = goog.dom.setProperties(el, attrs);
+  assertEquals('Should be equal', '#myMap', el.getAttribute('usemap'));
+}
+
 function testSetPropertiesAria() {
   var attrs = {
     'aria-hidden': 'true',
@@ -305,9 +314,10 @@ function testCreateDom() {
           'has a link'),
           ', how cool is this?'));
 
-  assertEquals('Tagname should be a DIV', 'DIV', el.tagName);
+  assertEquals('Tagname should be a DIV', goog.dom.TagName.DIV, el.tagName);
   assertEquals('Style width should be 50%', '50%', el.style.width);
-  assertEquals('first child is a P tag', 'P', el.childNodes[0].tagName);
+  assertEquals('first child is a P tag', goog.dom.TagName.P,
+               el.childNodes[0].tagName);
   assertEquals('second child .innerHTML', 'Para 2',
                el.childNodes[1].innerHTML);
 
@@ -338,7 +348,7 @@ function testCreateDomAcceptsArray() {
   var ul = goog.dom.createDom(goog.dom.TagName.UL, {}, items);
   assertEquals('List should have two children', 2, ul.childNodes.length);
   assertEquals('First child should be an LI tag',
-      'LI', ul.firstChild.tagName);
+               goog.dom.TagName.LI, ul.firstChild.tagName);
   assertEquals('Item 1', ul.childNodes[0].innerHTML);
   assertEquals('Item 2', ul.childNodes[1].innerHTML);
 }
@@ -390,7 +400,7 @@ function testCreateDomNodeListArg() {
   assertEquals('childNodes[0] should be a text node with value "Hello, "',
       'Hello, ', el.childNodes[0].nodeValue);
   assertEquals('childNodes[1] should be an element node with tagName "B"',
-      'B', el.childNodes[1].tagName);
+      goog.dom.TagName.B, el.childNodes[1].tagName);
   assertEquals('childNodes[2] should be a text node with value "!"', '!',
       el.childNodes[2].nodeValue);
 }
@@ -433,7 +443,7 @@ function testContains() {
 function testCreateDomWithClassName() {
   var el = goog.dom.createDom(goog.dom.TagName.DIV, 'cls');
   assertNull('firstChild should be null', el.firstChild);
-  assertEquals('Tagname should be a DIV', 'DIV', el.tagName);
+  assertEquals('Tagname should be a DIV', goog.dom.TagName.DIV, el.tagName);
   assertEquals('ClassName should be cls', 'cls', el.className);
 
   el = goog.dom.createDom(goog.dom.TagName.DIV, '');
@@ -841,16 +851,16 @@ function testGetNextNode() {
     return node = goog.dom.getNextNode(node);
   };
 
-  assertEquals('P', next().tagName);
+  assertEquals(goog.dom.TagName.P, next().tagName);
   assertEquals('Some text', next().nodeValue);
-  assertEquals('BLOCKQUOTE', next().tagName);
+  assertEquals(goog.dom.TagName.BLOCKQUOTE, next().tagName);
   assertEquals('Some ', next().nodeValue);
-  assertEquals('I', next().tagName);
+  assertEquals(goog.dom.TagName.I, next().tagName);
   assertEquals('special', next().nodeValue);
   assertEquals(' ', next().nodeValue);
-  assertEquals('B', next().tagName);
+  assertEquals(goog.dom.TagName.B, next().tagName);
   assertEquals('text', next().nodeValue);
-  assertEquals('ADDRESS', next().tagName);
+  assertEquals(goog.dom.TagName.ADDRESS, next().tagName);
   assertEquals(goog.dom.NodeType.COMMENT, next().nodeType);
   assertEquals('Foo', next().nodeValue);
 
@@ -873,17 +883,17 @@ function testGetPreviousNode() {
   };
 
   assertEquals(goog.dom.NodeType.COMMENT, previous().nodeType);
-  assertEquals('ADDRESS', previous().tagName);
+  assertEquals(goog.dom.TagName.ADDRESS, previous().tagName);
   assertEquals('text', previous().nodeValue);
-  assertEquals('B', previous().tagName);
+  assertEquals(goog.dom.TagName.B, previous().tagName);
   assertEquals(' ', previous().nodeValue);
   assertEquals('special', previous().nodeValue);
-  assertEquals('I', previous().tagName);
+  assertEquals(goog.dom.TagName.I, previous().tagName);
   assertEquals('Some ', previous().nodeValue);
-  assertEquals('BLOCKQUOTE', previous().tagName);
+  assertEquals(goog.dom.TagName.BLOCKQUOTE, previous().tagName);
   assertEquals('Some text', previous().nodeValue);
-  assertEquals('P', previous().tagName);
-  assertEquals('DIV', previous().tagName);
+  assertEquals(goog.dom.TagName.P, previous().tagName);
+  assertEquals(goog.dom.TagName.DIV, previous().tagName);
 
   if (!goog.userAgent.IE) {
     // Internet Explorer maintains a parentNode for Elements after they are
@@ -1440,11 +1450,11 @@ function testSafeHtmlToNode() {
 
   var div = goog.dom.safeHtmlToNode(
       goog.html.testing.newSafeHtmlForTest('<div>3</div>'));
-  assertEquals('DIV', div.tagName);
+  assertEquals(goog.dom.TagName.DIV, div.tagName);
 
   var script = goog.dom.safeHtmlToNode(
       goog.html.testing.newSafeHtmlForTest('<script></script>'));
-  assertEquals('SCRIPT', script.tagName);
+  assertEquals(goog.dom.TagName.SCRIPT, script.tagName);
 
   if (goog.userAgent.IE && !goog.userAgent.isDocumentModeOrHigher(9)) {
     // Removing an Element from a DOM tree in IE sets its parentNode to a new
@@ -1462,10 +1472,10 @@ function testHtmlToDocumentFragment() {
   assertEquals(2, docFragment.childNodes.length);
 
   var div = goog.dom.htmlToDocumentFragment('<div>3</div>');
-  assertEquals('DIV', div.tagName);
+  assertEquals(goog.dom.TagName.DIV, div.tagName);
 
   var script = goog.dom.htmlToDocumentFragment('<script></script>');
-  assertEquals('SCRIPT', script.tagName);
+  assertEquals(goog.dom.TagName.SCRIPT, script.tagName);
 
   if (goog.userAgent.IE && !goog.userAgent.isDocumentModeOrHigher(9)) {
     // Removing an Element from a DOM tree in IE sets its parentNode to a new
@@ -1557,6 +1567,29 @@ function testGetDocumentScrollFromDocumentWithoutABody() {
   assertEquals(0, dh.getDocumentScroll().x);
   assertEquals(0, dh.getDocumentScroll().y);
   // OK if this does not throw.
+}
+
+function testDefaultToScrollingElement() {
+  var fakeDocument = {
+    documentElement: {},
+    body: {}
+  };
+  var dh = new goog.dom.DomHelper(fakeDocument);
+
+  // When scrollingElement isn't supported or is null (no element causes
+  // scrolling), then behavior is UA-dependant for maximum compatibility.
+  assertTrue(dh.getDocumentScrollElement() == fakeDocument.body ||
+      dh.getDocumentScrollElement() == fakeDocument.documentElement);
+  fakeDocument.scrollingElement = null;
+  assertTrue(dh.getDocumentScrollElement() == fakeDocument.body ||
+      dh.getDocumentScrollElement() == fakeDocument.documentElement);
+
+  // But when scrollingElement is set, we use it directly.
+  fakeDocument.scrollingElement = fakeDocument.documentElement;
+  assertEquals(fakeDocument.documentElement, dh.getDocumentScrollElement());
+  fakeDocument.scrollingElement = fakeDocument.body;
+  assertEquals(fakeDocument.body, dh.getDocumentScrollElement());
+
 }
 
 function testActiveElementIE() {
