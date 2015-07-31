@@ -29,6 +29,9 @@ goog.provide('Blockly.Blocks.lists');
 goog.require('Blockly.Blocks');
 
 
+/**
+ * Common HSV hue for all blocks in this category.
+ */
 Blockly.Blocks.lists.HUE = 260;
 
 Blockly.Blocks['lists_create_empty'] = {
@@ -62,7 +65,7 @@ Blockly.Blocks['lists_create_with'] = {
   },
   /**
    * Create XML to represent list inputs.
-   * @return {Element} XML storage element.
+   * @return {!Element} XML storage element.
    * @this Blockly.Block
    */
   mutationToDom: function() {
@@ -207,14 +210,24 @@ Blockly.Blocks['lists_repeat'] = {
    * @this Blockly.Block
    */
   init: function() {
-    this.setHelpUrl(Blockly.Msg.LISTS_REPEAT_HELPURL);
-    this.setColour(Blockly.Blocks.lists.HUE);
-    this.setOutput(true, 'Array');
-    this.interpolateMsg(Blockly.Msg.LISTS_REPEAT_TITLE,
-                        ['ITEM', null, Blockly.ALIGN_RIGHT],
-                        ['NUM', 'Number', Blockly.ALIGN_RIGHT],
-                        Blockly.ALIGN_RIGHT);
-    this.setTooltip(Blockly.Msg.LISTS_REPEAT_TOOLTIP);
+    this.jsonInit({
+      "message0": Blockly.Msg.LISTS_REPEAT_TITLE,
+      "args0": [
+        {
+          "type": "input_value",
+          "name": "ITEM"
+        },
+        {
+          "type": "input_value",
+          "name": "NUM",
+          "check": "Number"
+        }
+      ],
+      "output": "Array",
+      "colour": Blockly.Blocks.lists.HUE,
+      "tooltip": Blockly.Msg.LISTS_REPEAT_TOOLTIP,
+      "helpUrl": Blockly.Msg.LISTS_REPEAT_HELPURL
+    });
   }
 };
 
@@ -224,13 +237,20 @@ Blockly.Blocks['lists_length'] = {
    * @this Blockly.Block
    */
   init: function() {
-    this.setHelpUrl(Blockly.Msg.LISTS_LENGTH_HELPURL);
-    this.setColour(Blockly.Blocks.lists.HUE);
-    this.interpolateMsg(Blockly.Msg.LISTS_LENGTH_TITLE,
-                        ['VALUE', ['Array', 'String'], Blockly.ALIGN_RIGHT],
-                        Blockly.ALIGN_RIGHT);
-    this.setOutput(true, 'Number');
-    this.setTooltip(Blockly.Msg.LISTS_LENGTH_TOOLTIP);
+    this.jsonInit({
+      "message0": Blockly.Msg.LISTS_LENGTH_TITLE,
+      "args0": [
+        {
+          "type": "input_value",
+          "name": "VALUE",
+          "check": ['String', 'Array']
+        }
+      ],
+      "output": 'Number',
+      "colour": Blockly.Blocks.lists.HUE,
+      "tooltip": Blockly.Msg.LISTS_LENGTH_TOOLTIP,
+      "helpUrl": Blockly.Msg.LISTS_LENGTH_HELPURL
+    });
   }
 };
 
@@ -240,14 +260,20 @@ Blockly.Blocks['lists_isEmpty'] = {
    * @this Blockly.Block
    */
   init: function() {
-    this.setHelpUrl(Blockly.Msg.LISTS_IS_EMPTY_HELPURL);
-    this.setColour(Blockly.Blocks.lists.HUE);
-    this.interpolateMsg(Blockly.Msg.LISTS_IS_EMPTY_TITLE,
-                        ['VALUE', ['Array', 'String'], Blockly.ALIGN_RIGHT],
-                        Blockly.ALIGN_RIGHT);
-    this.setInputsInline(true);
-    this.setOutput(true, 'Boolean');
-    this.setTooltip(Blockly.Msg.LISTS_TOOLTIP);
+    this.jsonInit({
+      "message0": Blockly.Msg.LISTS_ISEMPTY_TITLE,
+      "args0": [
+        {
+          "type": "input_value",
+          "name": "VALUE",
+          "check": ['String', 'Array']
+        }
+      ],
+      "output": 'Boolean',
+      "colour": Blockly.Blocks.lists.HUE,
+      "tooltip": Blockly.Msg.LISTS_ISEMPTY_TOOLTIP,
+      "helpUrl": Blockly.Msg.LISTS_ISEMPTY_HELPURL
+    });
   }
 };
 
@@ -623,14 +649,8 @@ Blockly.Blocks['lists_split'] = {
     var dropdown = new Blockly.FieldDropdown(
         [[Blockly.Msg.LISTS_SPLIT_LIST_FROM_TEXT, 'SPLIT'],
          [Blockly.Msg.LISTS_SPLIT_TEXT_FROM_LIST, 'JOIN']],
-        function(newOp) {
-          if (newOp == 'SPLIT') {
-            thisBlock.outputConnection.setCheck('Array');
-            thisBlock.getInput('INPUT').setCheck('String');
-          } else {
-            thisBlock.outputConnection.setCheck('String');
-            thisBlock.getInput('INPUT').setCheck('Array');
-          }
+        function(newMode) {
+          thisBlock.updateType_(newMode);
         });
     this.setHelpUrl(Blockly.Msg.LISTS_SPLIT_HELPURL);
     this.setColour(Blockly.Blocks.lists.HUE);
@@ -651,5 +671,38 @@ Blockly.Blocks['lists_split'] = {
       }
       throw 'Unknown mode: ' + mode;
     });
+  },
+  /**
+   * Modify this block to have the correct input and output types.
+   * @param {string} newMode Either 'SPLIT' or 'JOIN'.
+   * @private
+   * @this Blockly.Block
+   */
+  updateType_: function(newMode) {
+    if (newMode == 'SPLIT') {
+      this.outputConnection.setCheck('Array');
+      this.getInput('INPUT').setCheck('String');
+    } else {
+      this.outputConnection.setCheck('String');
+      this.getInput('INPUT').setCheck('Array');
+    }
+  },
+  /**
+   * Create XML to represent the input and output types.
+   * @return {!Element} XML storage element.
+   * @this Blockly.Block
+   */
+  mutationToDom: function() {
+    var container = document.createElement('mutation');
+    container.setAttribute('mode', this.getFieldValue('MODE'));
+    return container;
+  },
+  /**
+   * Parse XML to restore the input and output types.
+   * @param {!Element} xmlElement XML storage element.
+   * @this Blockly.Block
+   */
+  domToMutation: function(xmlElement) {
+    this.updateType_(xmlElement.getAttribute('mode'));
   }
 };

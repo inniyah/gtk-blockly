@@ -29,14 +29,14 @@ goog.provide('Blockly.FieldColour');
 goog.require('Blockly.Field');
 goog.require('goog.dom');
 goog.require('goog.events');
-goog.require('goog.ui.ColorPicker');
 goog.require('goog.style');
+goog.require('goog.ui.ColorPicker');
 
 
 /**
  * Class for a colour input field.
  * @param {string} colour The initial colour in '#rrggbb' format.
- * @param {Function} opt_changeHandler A function that is executed when a new
+ * @param {Function=} opt_changeHandler A function that is executed when a new
  *     colour is selected.  Its sole argument is the new colour value.  Its
  *     return value becomes the selected colour, unless it is undefined, in
  *     which case the new colour stands, or it is null, in which case the change
@@ -47,7 +47,7 @@ goog.require('goog.style');
 Blockly.FieldColour = function(colour, opt_changeHandler) {
   Blockly.FieldColour.superClass_.constructor.call(this, '\u00A0\u00A0\u00A0');
 
-  this.changeHandler_ = opt_changeHandler;
+  this.setChangeHandler(opt_changeHandler);
   // Set the initial state.
   this.setValue(colour);
 
@@ -65,15 +65,6 @@ Blockly.FieldColour.prototype.init = function(block) {
   Blockly.FieldColour.superClass_.init.call(this, block);
   this.borderRect_.style['fillOpacity'] = 1;
   this.setValue(this.getValue());
-};
-
-/**
- * Clone this FieldColour.
- * @return {!Blockly.FieldColour} The result of calling the constructor again
- *   with the current values of the arguments used during construction.
- */
-Blockly.FieldColour.prototype.clone = function() {
-  return new Blockly.FieldColour(this.getValue(), this.changeHandler_);
 };
 
 /**
@@ -167,7 +158,8 @@ Blockly.FieldColour.prototype.setColumns = function(columns) {
  * @private
  */
 Blockly.FieldColour.prototype.showEditor_ = function() {
-  Blockly.WidgetDiv.show(this, Blockly.FieldColour.widgetDispose_);
+  Blockly.WidgetDiv.show(this, this.sourceBlock_.RTL,
+      Blockly.FieldColour.widgetDispose_);
   // Create the palette using Closure.
   var picker = new goog.ui.ColorPicker();
   picker.setSize(this.columns_ || Blockly.FieldColour.COLUMNS);
@@ -177,7 +169,7 @@ Blockly.FieldColour.prototype.showEditor_ = function() {
   // Record windowSize and scrollOffset before adding the palette.
   var windowSize = goog.dom.getViewportSize();
   var scrollOffset = goog.style.getViewportPageOffset(document);
-  var xy = Blockly.getAbsoluteXY_(/** @type {!Element} */ (this.borderRect_));
+  var xy = this.getAbsoluteXY_();
   var borderBBox = this.borderRect_.getBBox();
   var div = Blockly.WidgetDiv.DIV;
   picker.render(div);
@@ -192,7 +184,7 @@ Blockly.FieldColour.prototype.showEditor_ = function() {
   } else {
     xy.y += borderBBox.height - 1;
   }
-  if (Blockly.RTL) {
+  if (this.sourceBlock_.RTL) {
     xy.x += borderBBox.width;
     xy.x -= paletteSize.width;
     // Don't go offscreen left.
@@ -205,7 +197,8 @@ Blockly.FieldColour.prototype.showEditor_ = function() {
       xy.x = windowSize.width + scrollOffset.x - paletteSize.width;
     }
   }
-  Blockly.WidgetDiv.position(xy.x, xy.y, windowSize, scrollOffset);
+  Blockly.WidgetDiv.position(xy.x, xy.y, windowSize, scrollOffset,
+                             this.sourceBlock_.RTL);
 
   // Configure event handler.
   var thisField = this;

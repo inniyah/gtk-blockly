@@ -34,7 +34,7 @@ goog.require('goog.userAgent');
 /**
  * Class for an editable angle field.
  * @param {string} text The initial content of the field.
- * @param {Function} opt_changeHandler An optional function that is called
+ * @param {Function=} opt_changeHandler An optional function that is called
  *     to validate any constraints on what the user entered.  Takes the new
  *     text as an argument and returns the accepted text or null to abort
  *     the change.
@@ -42,37 +42,42 @@ goog.require('goog.userAgent');
  * @constructor
  */
 Blockly.FieldAngle = function(text, opt_changeHandler) {
-  var changeHandler;
-  if (opt_changeHandler) {
-    // Wrap the user's change handler together with the angle validator.
-    var thisObj = this;
-    changeHandler = function(value) {
-      value = Blockly.FieldAngle.angleValidator.call(thisObj, value);
-      if (value !== null) {
-        opt_changeHandler.call(thisObj, value);
-      }
-      return value;
-    };
-  } else {
-    changeHandler = Blockly.FieldAngle.angleValidator;
-  }
-
   // Add degree symbol: "360°" (LTR) or "°360" (RTL)
   this.symbol_ = Blockly.createSvgElement('tspan', {}, null);
   this.symbol_.appendChild(document.createTextNode('\u00B0'));
 
-  Blockly.FieldAngle.superClass_.constructor.call(this,
-      text, changeHandler);
+  Blockly.FieldAngle.superClass_.constructor.call(this, text, null);
+  this.setChangeHandler(opt_changeHandler);
 };
 goog.inherits(Blockly.FieldAngle, Blockly.FieldTextInput);
 
 /**
- * Clone this FieldAngle.
- * @return {!Blockly.FieldAngle} The result of calling the constructor again
- *   with the current values of the arguments used during construction.
+ * Sets a new change handler for angle field.
+ * @param {Function} handler New change handler, or null.
  */
-Blockly.FieldAngle.prototype.clone = function() {
-  return new Blockly.FieldAngle(this.getText(), this.changeHandler_);
+Blockly.FieldAngle.prototype.setChangeHandler = function(handler) {
+  var wrappedHandler;
+  if (handler) {
+    // Wrap the user's change handler together with the angle validator.
+    wrappedHandler = function(value) {
+      var v1 = handler.call(this, value);
+      if (v1 === null) {
+        var v2 = v1;
+      } else {
+        if (v1 === undefined) {
+          v1 = value;
+        }
+        var v2 = Blockly.FieldAngle.angleValidator.call(this, v1);
+        if (v2 !== undefined) {
+          v2 = v1;
+        }
+      }
+      return v2 === value ? undefined : v2;
+    };
+  } else {
+    wrappedHandler = Blockly.FieldAngle.angleValidator;
+  }
+  Blockly.FieldAngle.superClass_.setChangeHandler(wrappedHandler);
 };
 
 /**
@@ -161,7 +166,7 @@ Blockly.FieldAngle.prototype.showEditor_ = function() {
           Blockly.FieldAngle.HALF + ', ' + Blockly.FieldAngle.HALF + ')'
     }, svg);
   }
-  svg.style.marginLeft = '-35px';
+  svg.style.marginLeft = (15 - Blockly.FieldAngle.RADIUS) + 'px';
   this.clickWrapper_ =
       Blockly.bindEvent_(svg, 'click', this, Blockly.WidgetDiv.hide);
   this.moveWrapper1_ =
@@ -202,6 +207,7 @@ Blockly.FieldAngle.prototype.onMouseMove = function(e) {
   angle = String(angle);
   Blockly.FieldTextInput.htmlInput_.value = angle;
   this.setText(angle);
+  this.validate_();
 };
 
 /**
@@ -216,7 +222,7 @@ Blockly.FieldAngle.prototype.setText = function(text) {
   }
   this.updateGraph_();
   // Insert degree symbol.
-  if (Blockly.RTL) {
+  if (this.sourceBlock_.RTL) {
     this.textElement_.insertBefore(this.symbol_, this.textElement_.firstChild);
   } else {
     this.textElement_.appendChild(this.symbol_);
