@@ -403,10 +403,7 @@ goog.module.getInternal_ = function(name) {
 
 
 /**
- * @private {?{
- *   moduleName: (string|undefined),
- *   declareTestMethods: boolean
- * }}
+ * @private {?{moduleName: (string|undefined)}}
  */
 goog.moduleLoaderState_ = null;
 
@@ -417,27 +414,6 @@ goog.moduleLoaderState_ = null;
  */
 goog.isInModuleLoader_ = function() {
   return goog.moduleLoaderState_ != null;
-};
-
-
-/**
- * Indicate that a module's exports that are known test methods should
- * be copied to the global object.  This makes the test methods visible to
- * test runners that inspect the global object.
- *
- * TODO(johnlenz): Make the test framework aware of goog.module so
- * that this isn't necessary. Alternately combine this with goog.setTestOnly
- * to minimize boiler plate.
- * @suppress {missingProvide}
- * @deprecated This approach does not translate to ES6 module syntax, instead
- *    use goog.testing.testSuite to declare the test methods.
- */
-goog.module.declareTestMethods = function() {
-  if (!goog.isInModuleLoader_()) {
-    throw new Error('goog.module.declareTestMethods must be called from ' +
-        'within a goog.module');
-  }
-  goog.moduleLoaderState_.declareTestMethods = true;
 };
 
 
@@ -497,6 +473,15 @@ goog.setTestOnly = function(opt_message) {
  *     "goog.package.part".
  */
 goog.forwardDeclare = function(name) {};
+
+
+/**
+ * Forward declare type information. Used to assign types to goog.global
+ * referenced object that would otherwise result in unknown type references
+ * and thus block property disambiguation.
+ */
+goog.forwardDeclare('Document');
+goog.forwardDeclare('XMLHttpRequest');
 
 
 if (!COMPILED) {
@@ -853,6 +838,7 @@ if (goog.DEPENDENCIES_ENABLED) {
    * @private
    */
   goog.inHtmlDocument_ = function() {
+    /** @type {Document} */
     var doc = goog.global.document;
     return typeof doc != 'undefined' &&
            'write' in doc;  // XULDocument misses write.
@@ -864,12 +850,13 @@ if (goog.DEPENDENCIES_ENABLED) {
    * @private
    */
   goog.findBasePath_ = function() {
-    if (goog.global.CLOSURE_BASE_PATH) {
+    if (goog.isDef(goog.global.CLOSURE_BASE_PATH)) {
       goog.basePath = goog.global.CLOSURE_BASE_PATH;
       return;
     } else if (!goog.inHtmlDocument_()) {
       return;
     }
+    /** @type {Document} */
     var doc = goog.global.document;
     var scripts = doc.getElementsByTagName('SCRIPT');
     // Search backwards since the current script is in almost all cases the one
@@ -904,8 +891,8 @@ if (goog.DEPENDENCIES_ENABLED) {
 
 
   /** @const @private {boolean} */
-  goog.IS_OLD_IE_ = !goog.global.atob && goog.global.document &&
-      goog.global.document.all;
+  goog.IS_OLD_IE_ = !!(!goog.global.atob && goog.global.document &&
+      goog.global.document.all);
 
 
   /**
@@ -1068,8 +1055,7 @@ if (goog.DEPENDENCIES_ENABLED) {
     // of the module.
     var previousState = goog.moduleLoaderState_;
     try {
-      goog.moduleLoaderState_ = {
-        moduleName: undefined, declareTestMethods: false};
+      goog.moduleLoaderState_ = {moduleName: undefined};
       var exports;
       if (goog.isFunction(moduleDef)) {
         exports = moduleDef.call(goog.global, {});
@@ -1093,17 +1079,6 @@ if (goog.DEPENDENCIES_ENABLED) {
       }
 
       goog.loadedModules_[moduleName] = exports;
-      if (goog.moduleLoaderState_.declareTestMethods) {
-        for (var entry in exports) {
-          if (entry.indexOf('test', 0) === 0 ||
-              entry == 'tearDown' ||
-              entry == 'setUp' ||
-              entry == 'setUpPage' ||
-              entry == 'tearDownPage') {
-            goog.global[entry] = exports[entry];
-          }
-        }
-      }
     } finally {
       goog.moduleLoaderState_ = previousState;
     }
@@ -1111,11 +1086,9 @@ if (goog.DEPENDENCIES_ENABLED) {
 
 
   /**
-   * @param {string} source
-   * @return {!Object}
-   * @private
+   * @private @const {function(string):?}
    */
-  goog.loadModuleFromSource_ = function(source) {
+  goog.loadModuleFromSource_ = function() {
     // NOTE: we avoid declaring parameters or local variables here to avoid
     // masking globals or leaking values into the module definition.
     'use strict';
@@ -1159,6 +1132,7 @@ if (goog.DEPENDENCIES_ENABLED) {
    * @private
    */
   goog.appendScriptSrcNode_ = function(src) {
+    /** @type {Document} */
     var doc = goog.global.document;
     var scriptEl = doc.createElement('script');
     scriptEl.type = 'text/javascript';
@@ -1180,6 +1154,7 @@ if (goog.DEPENDENCIES_ENABLED) {
    */
   goog.writeScriptTag_ = function(src, opt_sourceText) {
     if (goog.inHtmlDocument_()) {
+      /** @type {Document} */
       var doc = goog.global.document;
 
       // If the user tries to require a new symbol after document load,
@@ -1396,6 +1371,7 @@ goog.loadFileSync_ = function(src) {
   if (goog.global.CLOSURE_LOAD_FILE_SYNC) {
     return goog.global.CLOSURE_LOAD_FILE_SYNC(src);
   } else {
+    /** @type {XMLHttpRequest} */
     var xhr = new goog.global['XMLHttpRequest']();
     xhr.open('get', src, false);
     xhr.send();
@@ -1956,6 +1932,7 @@ goog.globalEval = function(script) {
     if (goog.evalWorksForGlobals_) {
       goog.global.eval(script);
     } else {
+      /** @type {Document} */
       var doc = goog.global.document;
       var scriptElt = doc.createElement('SCRIPT');
       scriptElt.type = 'text/javascript';
