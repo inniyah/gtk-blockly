@@ -98,7 +98,7 @@ Blockly.Field.prototype.init = function(block) {
        'ry': 4,
        'x': -Blockly.BlockSvg.SEP_SPACE_X / 2,
        'y': -12,
-       'height': 16}, this.fieldGroup_);
+       'height': 16}, this.fieldGroup_, this.sourceBlock_.workspace);
   this.textElement_ = Blockly.createSvgElement('text',
       {'class': 'blocklyText'}, this.fieldGroup_);
 
@@ -222,6 +222,18 @@ Blockly.Field.prototype.getSize = function() {
     this.render_();
   }
   return this.size_;
+};
+
+/**
+ * Returns the height and width of the field,
+ * accounting for the workspace scaling.
+ * @return {!goog.math.Size} Height and width.
+ */
+Blockly.Field.prototype.getScaledBBox_ = function() {
+  var bBox = this.borderRect_.getBBox();
+  // Create new object, as getBBox can return an uneditable SVGRect in IE.
+  return new goog.math.Size(bBox.width * this.sourceBlock_.workspace.scale,
+                            bBox.height * this.sourceBlock_.workspace.scale);
 };
 
 /**
