@@ -32,7 +32,7 @@ goog.provide('goog.object');
  */
 goog.object.forEach = function(obj, f, opt_obj) {
   for (var key in obj) {
-    f.call(opt_obj, obj[key], key, obj);
+    f.call(/** @type {?} */ (opt_obj), obj[key], key, obj);
   }
 };
 
@@ -56,7 +56,7 @@ goog.object.forEach = function(obj, f, opt_obj) {
 goog.object.filter = function(obj, f, opt_obj) {
   var res = {};
   for (var key in obj) {
-    if (f.call(opt_obj, obj[key], key, obj)) {
+    if (f.call(/** @type {?} */ (opt_obj), obj[key], key, obj)) {
       res[key] = obj[key];
     }
   }
@@ -81,7 +81,7 @@ goog.object.filter = function(obj, f, opt_obj) {
 goog.object.map = function(obj, f, opt_obj) {
   var res = {};
   for (var key in obj) {
-    res[key] = f.call(opt_obj, obj[key], key, obj);
+    res[key] = f.call(/** @type {?} */ (opt_obj), obj[key], key, obj);
   }
   return res;
 };
@@ -103,7 +103,7 @@ goog.object.map = function(obj, f, opt_obj) {
  */
 goog.object.some = function(obj, f, opt_obj) {
   for (var key in obj) {
-    if (f.call(opt_obj, obj[key], key, obj)) {
+    if (f.call(/** @type {?} */ (opt_obj), obj[key], key, obj)) {
       return true;
     }
   }
@@ -127,7 +127,7 @@ goog.object.some = function(obj, f, opt_obj) {
  */
 goog.object.every = function(obj, f, opt_obj) {
   for (var key in obj) {
-    if (!f.call(opt_obj, obj[key], key, obj)) {
+    if (!f.call(/** @type {?} */ (opt_obj), obj[key], key, obj)) {
       return false;
     }
   }
@@ -264,11 +264,11 @@ goog.object.getValueByKeys = function(obj, var_args) {
  * Whether the object/map/hash contains the given key.
  *
  * @param {Object} obj The object in which to look for key.
- * @param {*} key The key for which to check.
+ * @param {?} key The key for which to check.
  * @return {boolean} true If the map contains the key.
  */
 goog.object.containsKey = function(obj, key) {
-  return key in obj;
+  return obj !== null && key in obj;
 };
 
 
@@ -304,7 +304,7 @@ goog.object.containsValue = function(obj, val) {
  */
 goog.object.findKey = function(obj, f, opt_this) {
   for (var key in obj) {
-    if (f.call(opt_this, obj[key], key, obj)) {
+    if (f.call(/** @type {?} */ (opt_this), obj[key], key, obj)) {
       return key;
     }
   }
@@ -360,12 +360,12 @@ goog.object.clear = function(obj) {
  * Removes a key-value pair based on the key.
  *
  * @param {Object} obj The object from which to remove the key.
- * @param {*} key The key to remove.
+ * @param {?} key The key to remove.
  * @return {boolean} Whether an element was removed.
  */
 goog.object.remove = function(obj, key) {
   var rv;
-  if ((rv = key in obj)) {
+  if (rv = key in /** @type {!Object} */ (obj)) {
     delete obj[key];
   }
   return rv;
@@ -382,7 +382,7 @@ goog.object.remove = function(obj, key) {
  * @template K,V
  */
 goog.object.add = function(obj, key, val) {
-  if (key in obj) {
+  if (obj !== null && key in obj) {
     throw Error('The object already contains the key "' + key + '"');
   }
   goog.object.set(obj, key, val);
@@ -400,7 +400,7 @@ goog.object.add = function(obj, key, val) {
  * @template K,V,R
  */
 goog.object.get = function(obj, key, opt_val) {
-  if (key in obj) {
+  if (obj !== null && key in obj) {
     return obj[key];
   }
   return opt_val;
@@ -430,7 +430,7 @@ goog.object.set = function(obj, key, value) {
  * @template K,V
  */
 goog.object.setIfUndefined = function(obj, key, value) {
-  return key in obj ? obj[key] : (obj[key] = value);
+  return key in /** @type {!Object} */ (obj) ? obj[key] : (obj[key] = value);
 };
 
 
