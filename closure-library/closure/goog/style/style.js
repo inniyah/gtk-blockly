@@ -36,6 +36,7 @@ goog.require('goog.math.Coordinate');
 goog.require('goog.math.Rect');
 goog.require('goog.math.Size');
 goog.require('goog.object');
+goog.require('goog.reflect');
 goog.require('goog.string');
 goog.require('goog.userAgent');
 
@@ -758,6 +759,13 @@ goog.style.getFramedPageOffset = function(el, relativeWin) {
   // Iterate up the ancestor frame chain, keeping track of the current window
   // and the current element in that window.
   var currentWin = goog.dom.getWindow(goog.dom.getOwnerDocument(el));
+
+  // MS Edge throws when accessing "parent" if el's containing iframe has been
+  // deleted.
+  if (!goog.reflect.canAccessProperty(currentWin, 'parent')) {
+    return position;
+  }
+
   var currentEl = el;
   do {
     // if we're at the top window, we want to get the page offset.
@@ -1111,6 +1119,7 @@ goog.style.toSelectorCase = function(selector) {
  *     if the opacity is not set.
  */
 goog.style.getOpacity = function(el) {
+  goog.asserts.assert(el);
   var style = el.style;
   var result = '';
   if ('opacity' in style) {
@@ -1134,6 +1143,7 @@ goog.style.getOpacity = function(el) {
  *     {@code ''} to clear the opacity.
  */
 goog.style.setOpacity = function(el, alpha) {
+  goog.asserts.assert(el);
   var style = el.style;
   if ('opacity' in style) {
     style.opacity = alpha;
@@ -1267,8 +1277,8 @@ goog.style.isElementShown = function(el) {
 
 
 /**
- * Installs the styles string into the window that contains opt_element.  If
- * opt_element is null, the main window is used.
+ * Installs the styles string into the window that contains opt_node.  If
+ * opt_node is null, the main window is used.
  * @param {string} stylesString The style string to install.
  * @param {Node=} opt_node Node whose parent document should have the
  *     styles installed.

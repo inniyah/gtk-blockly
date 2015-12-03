@@ -309,9 +309,10 @@ goog.html.SafeHtml.URL_ATTRIBUTES_ = goog.object.createSet('action', 'cite',
  * @private @const {!Object<string,boolean>}
  */
 goog.html.SafeHtml.NOT_ALLOWED_TAG_NAMES_ = goog.object.createSet(
-    goog.dom.TagName.EMBED, goog.dom.TagName.IFRAME, goog.dom.TagName.LINK,
+    goog.dom.TagName.APPLET, goog.dom.TagName.BASE, goog.dom.TagName.EMBED,
+    goog.dom.TagName.IFRAME, goog.dom.TagName.LINK, goog.dom.TagName.MATH,
     goog.dom.TagName.OBJECT, goog.dom.TagName.SCRIPT, goog.dom.TagName.STYLE,
-    goog.dom.TagName.TEMPLATE);
+    goog.dom.TagName.SVG, goog.dom.TagName.TEMPLATE);
 
 
 /**
@@ -353,9 +354,10 @@ goog.html.SafeHtml.AttributeValue_;
  * - For attributes which are interpreted as URLs (e.g. src, href) a
  *   goog.html.SafeUrl, goog.string.Const or string is required. If a string
  *   is passed, it will be sanitized with SafeUrl.sanitize().
- * - For tags which can load code, more specific goog.html.SafeHtml.create*()
- *   functions must be used. Tags which can load code and are not supported by
- *   this function are embed, iframe, link, object, script, style, and template.
+ * - For tags which can load code or set security relevant page metadata,
+ *   more specific goog.html.SafeHtml.create*() functions must be used. Tags
+ *   which are not supported by this function are applet, base, embed, iframe,
+ *   link, math, object, script, style, svg, and template.
  *
  * @param {string} tagName The name of the tag. Only tag names consisting of
  *     [a-zA-Z0-9-] are allowed. Tag names documented above are disallowed.
