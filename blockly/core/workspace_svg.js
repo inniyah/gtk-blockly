@@ -150,18 +150,20 @@ Blockly.WorkspaceSvg.prototype.scrollbar = null;
  * @return {!Element} The workspace's SVG group.
  */
 Blockly.WorkspaceSvg.prototype.createDom = function(opt_backgroundClass) {
-  /*
-  <g class="blocklyWorkspace">
-    <rect class="blocklyMainBackground" height="100%" width="100%"></rect>
-    [Trashcan and/or flyout may go here]
-    <g class="blocklyBlockCanvas"></g>
-    <g class="blocklyBubbleCanvas"></g>
-    [Scrollbars may go here]
-  </g>
-  */
+  /**
+   * <g class="blocklyWorkspace">
+   *   <rect class="blocklyMainBackground" height="100%" width="100%"></rect>
+   *   [Trashcan and/or flyout may go here]
+   *   <g class="blocklyBlockCanvas"></g>
+   *   <g class="blocklyBubbleCanvas"></g>
+   *   [Scrollbars may go here]
+   * </g>
+   * @type {SVGElement}
+   */
   this.svgGroup_ = Blockly.createSvgElement('g',
       {'class': 'blocklyWorkspace'}, null);
   if (opt_backgroundClass) {
+    /** @type {SVGElement} */
     this.svgBackground_ = Blockly.createSvgElement('rect',
         {'height': '100%', 'width': '100%',
          'class': opt_backgroundClass}, this.svgGroup_);
@@ -170,8 +172,10 @@ Blockly.WorkspaceSvg.prototype.createDom = function(opt_backgroundClass) {
           'url(#' + this.options.gridPattern.id + ')';
     }
   }
+  /** @type {SVGElement} */
   this.svgBlockCanvas_ = Blockly.createSvgElement('g',
       {'class': 'blocklyBlockCanvas'}, this.svgGroup_, this);
+  /** @type {SVGElement} */
   this.svgBubbleCanvas_ = Blockly.createSvgElement('g',
       {'class': 'blocklyBubbleCanvas'}, this.svgGroup_, this);
   var bottom = Blockly.Scrollbar.scrollbarThickness;
@@ -854,6 +858,7 @@ Blockly.WorkspaceSvg.prototype.updateToolbox = function(tree) {
     }
     this.options.languageTree = tree;
     this.toolbox_.populate_(tree);
+    this.toolbox_.addColour_();
   } else {
     if (!this.flyout_) {
       throw 'Existing toolbox has categories.  Can\'t change mode.';

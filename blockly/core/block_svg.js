@@ -41,12 +41,16 @@ goog.require('goog.math.Coordinate');
  */
 Blockly.BlockSvg = function() {
   // Create core elements for the block.
+  /** @type {SVGElement} */
   this.svgGroup_ = Blockly.createSvgElement('g', {}, null);
+  /** @type {SVGElement} */
   this.svgPathDark_ = Blockly.createSvgElement('path',
       {'class': 'blocklyPathDark', 'transform': 'translate(1,1)'},
       this.svgGroup_);
+  /** @type {SVGElement} */
   this.svgPath_ = Blockly.createSvgElement('path', {'class': 'blocklyPath'},
       this.svgGroup_);
+  /** @type {SVGElement} */
   this.svgPathLight_ = Blockly.createSvgElement('path',
       {'class': 'blocklyPathLight'}, this.svgGroup_);
   this.svgPath_.tooltip = this;
@@ -315,7 +319,7 @@ Blockly.BlockSvg.prototype.snapToGrid = function() {
 /**
  * Returns a bounding box describing the dimensions of this block
  * and any blocks stacked below it.
- * @return {!Object} Object with height and width properties.
+ * @return {!{height: number, width: number}} Object with height and width properties.
  */
 Blockly.BlockSvg.prototype.getHeightWidth = function() {
   var height = this.height;
