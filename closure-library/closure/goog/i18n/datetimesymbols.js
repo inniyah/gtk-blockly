@@ -971,7 +971,7 @@ goog.i18n.DateTimeSymbols_en_AU = {
   SHORTQUARTERS: ['Q1', 'Q2', 'Q3', 'Q4'],
   QUARTERS: ['1st quarter', '2nd quarter', '3rd quarter', '4th quarter'],
   AMPMS: ['am', 'pm'],
-  DATEFORMATS: ['EEEE, d MMMM y', 'dMMMM,y', 'dMMM,y', 'd/M/yy'],
+  DATEFORMATS: ['EEEE, d MMMM y', 'd MMMM y', 'd MMM y', 'd/M/yy'],
   TIMEFORMATS: ['h:mm:ss a zzzz', 'h:mm:ss a z', 'h:mm:ss a', 'h:mm a'],
   DATETIMEFORMATS: ['{1} \'at\' {0}', '{1} \'at\' {0}', '{1}, {0}', '{1}, {0}'],
   FIRSTDAYOFWEEK: 6,
@@ -4573,6 +4573,38 @@ goog.i18n.DateTimeSymbols_zu = {
   FIRSTWEEKCUTOFFDAY: 5
 };
 
+/**
+ * @typedef {{
+ *   ERAS,
+ *   ERANAMES,
+ *   NARROWMONTHS,
+ *   STANDALONENARROWMONTHS,
+ *   MONTHS,
+ *   STANDALONEMONTHS,
+ *   SHORTMONTHS,
+ *   STANDALONESHORTMONTHS,
+ *   WEEKDAYS,
+ *   STANDALONEWEEKDAYS,
+ *   SHORTWEEKDAYS,
+ *   STANDALONESHORTWEEKDAYS,
+ *   NARROWWEEKDAYS,
+ *   STANDALONENARROWWEEKDAYS,
+ *   SHORTQUARTERS,
+ *   QUARTERS,
+ *   AMPMS,
+ *   DATEFORMATS,
+ *   TIMEFORMATS,
+ *   DATETIMEFORMATS,
+ *   FIRSTDAYOFWEEK,
+ *   WEEKENDRANGE,
+ *   FIRSTWEEKCUTOFFDAY
+ * }}
+ */
+goog.i18n.DateTimeSymbolsType;
+
+// The type of goog.i18n.DateTimeSymbols should be
+// goog.i18n.DateTimeSymbolsType, but doing that requires fixing projects that
+// are using the wrong type.
 
 /**
  * Selected date/time formatting symbols by locale.
@@ -4795,4 +4827,3 @@ if (goog.LOCALE == 'af') {
 } else {
   goog.i18n.DateTimeSymbols = goog.i18n.DateTimeSymbols_en;
 }
-
