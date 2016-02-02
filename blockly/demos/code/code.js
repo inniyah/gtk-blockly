@@ -79,7 +79,7 @@ Code.LANGUAGE_NAME = {
 /**
  * List of RTL languages.
  */
-Code.LANGUAGE_RTL = ['ar', 'fa', 'he'];
+Code.LANGUAGE_RTL = ['ar', 'fa', 'he', 'lki'];
 
 /**
  * Blockly's main workspace.
@@ -515,9 +515,11 @@ Code.runJS = function() {
 Code.discard = function() {
   var count = Code.workspace.getAllBlocks().length;
   if (count < 2 ||
-      window.confirm(MSG['discard'].replace('%1', count))) {
+      window.confirm(Blockly.Msg.DELETE_ALL_BLOCKS.replace('%1', count))) {
     Code.workspace.clear();
-    window.location.hash = '';
+    if (window.location.hash) {
+      window.location.hash = '';
+    }
   }
 };
 
