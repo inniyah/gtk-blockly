@@ -46,11 +46,6 @@ goog.require('goog.html.legacyconversions');
  * values are allowed. {@code goog.ui.media.MediaRenderer} checks whether the
  * values are available before creating DOMs for them.
  *
- * TODO(user): support asynchronous data models by subclassing
- * {@link goog.events.EventTarget} or {@link goog.ds.DataNode}. Understand why
- * {@link http://goto/datanode} is not available in closure. Add setters to
- * MediaModel once this is supported.
- *
  * @param {string=} opt_url An optional URL of the media.
  * @param {string=} opt_caption An optional caption of the media.
  * @param {string=} opt_description An optional description of the media.
