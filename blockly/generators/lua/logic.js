@@ -1,8 +1,9 @@
 /**
+ * @license
  * Visual Blocks Language
  *
- * Copyright 2012 Google Inc.
- * http://blockly.googlecode.com/
+ * Copyright 2016 Google Inc.
+ * https://developers.google.com/blockly/
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +20,7 @@
 
 /**
  * @fileoverview Generating Lua for logic blocks.
- * @author ellen.spertus@gmail.com (Ellen Spertus)
+ * @author rodrigoq@google.com (Rodrigo Queiro)
  */
 'use strict';
 
@@ -32,44 +33,44 @@ Blockly.Lua['controls_if'] = function(block) {
   // If/elseif/else condition.
   var n = 0;
   var argument = Blockly.Lua.valueToCode(block, 'IF' + n,
-      Blockly.Lua.ORDER_NONE) || 'False';
-  var branch = Blockly.Lua.statementToCode(block, 'DO' + n) || '';
+      Blockly.Lua.ORDER_NONE) || 'false';
+  var branch = Blockly.Lua.statementToCode(block, 'DO' + n);
   var code = 'if ' + argument + ' then\n' + branch;
   for (n = 1; n <= block.elseifCount_; n++) {
     argument = Blockly.Lua.valueToCode(block, 'IF' + n,
-        Blockly.Lua.ORDER_NONE) || 'False';
-    branch = Blockly.Lua.statementToCode(block, 'DO' + n) || '';
-    code += 'elseif ' + argument + ' then\n' + branch;
+        Blockly.Lua.ORDER_NONE) || 'false';
+    branch = Blockly.Lua.statementToCode(block, 'DO' + n);
+    code += ' elseif ' + argument + ' then\n' + branch;
   }
   if (block.elseCount_) {
-    branch = Blockly.Lua.statementToCode(block, 'ELSE') || '  pass\n';
-    code += 'else\n' + branch;
+    branch = Blockly.Lua.statementToCode(block, 'ELSE');
+    code += ' else\n' + branch;
   }
-  code += 'end\n';
-  return code;
+  return code + 'end\n';
 };
 
 Blockly.Lua['logic_compare'] = function(block) {
   // Comparison operator.
   var OPERATORS = {
-    EQ: '==',
-    NEQ: '~=',
-    LT: '<',
-    LTE: '<=',
-    GT: '>',
-    GTE: '>='
+    'EQ': '==',
+    'NEQ': '~=',
+    'LT': '<',
+    'LTE': '<=',
+    'GT': '>',
+    'GTE': '>='
   };
-  var operator = OPERATORS[block.getTitleValue('OP')];
-  var order = Blockly.Lua.ORDER_RELATIONAL;
-  var argument0 = Blockly.Lua.valueToCode(block, 'A', order) || '0';
-  var argument1 = Blockly.Lua.valueToCode(block, 'B', order) || '0';
+  var operator = OPERATORS[block.getFieldValue('OP')];
+  var argument0 = Blockly.Lua.valueToCode(block, 'A',
+      Blockly.Lua.ORDER_RELATIONAL) || '0';
+  var argument1 = Blockly.Lua.valueToCode(block, 'B',
+      Blockly.Lua.ORDER_RELATIONAL) || '0';
   var code = argument0 + ' ' + operator + ' ' + argument1;
-  return [code, order];
+  return [code, Blockly.Lua.ORDER_RELATIONAL];
 };
 
 Blockly.Lua['logic_operation'] = function(block) {
   // Operations 'and', 'or'.
-  var operator = (block.getTitleValue('OP') == 'AND') ? 'and' : 'or';
+  var operator = (block.getFieldValue('OP') == 'AND') ? 'and' : 'or';
   var order = (operator == 'and') ? Blockly.Lua.ORDER_AND :
       Blockly.Lua.ORDER_OR;
   var argument0 = Blockly.Lua.valueToCode(block, 'A', order);
@@ -102,7 +103,7 @@ Blockly.Lua['logic_negate'] = function(block) {
 
 Blockly.Lua['logic_boolean'] = function(block) {
   // Boolean values true and false.
-  var code = (block.getTitleValue('BOOL') == 'TRUE') ? 'true' : 'false';
+  var code = (block.getFieldValue('BOOL') == 'TRUE') ? 'true' : 'false';
   return [code, Blockly.Lua.ORDER_ATOMIC];
 };
 
@@ -116,7 +117,7 @@ Blockly.Lua['logic_ternary'] = function(block) {
   var value_if = Blockly.Lua.valueToCode(block, 'IF',
       Blockly.Lua.ORDER_AND) || 'false';
   var value_then = Blockly.Lua.valueToCode(block, 'THEN',
-      Blockly.Lua.ORDER_OR) || 'nil';
+      Blockly.Lua.ORDER_AND) || 'nil';
   var value_else = Blockly.Lua.valueToCode(block, 'ELSE',
       Blockly.Lua.ORDER_OR) || 'nil';
   var code = value_if + ' and ' + value_then + ' or ' + value_else;

@@ -1,8 +1,9 @@
 /**
+ * @license
  * Visual Blocks Language
  *
- * Copyright 2012 Google Inc.
- * http://blockly.googlecode.com/
+ * Copyright 2016 Google Inc.
+ * https://developers.google.com/blockly/
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +20,7 @@
 
 /**
  * @fileoverview Generating Lua for variable blocks.
- *
- * This is unchanged from the Python version, except for replacing "Python"
- * with "Lua" wherever it appeared.
- *
- * @author q.neutron@gmail.com (Quynh Neutron)
+ * @author rodrigoq@google.com (Rodrigo Queiro)
  */
 'use strict';
 
@@ -34,7 +31,7 @@ goog.require('Blockly.Lua');
 
 Blockly.Lua['variables_get'] = function(block) {
   // Variable getter.
-  var code = Blockly.Lua.variableDB_.getName(block.getTitleValue('VAR'),
+  var code = Blockly.Lua.variableDB_.getName(block.getFieldValue('VAR'),
       Blockly.Variables.NAME_TYPE);
   return [code, Blockly.Lua.ORDER_ATOMIC];
 };
@@ -43,37 +40,7 @@ Blockly.Lua['variables_set'] = function(block) {
   // Variable setter.
   var argument0 = Blockly.Lua.valueToCode(block, 'VALUE',
       Blockly.Lua.ORDER_NONE) || '0';
-  var varName = Blockly.Lua.variableDB_.getName(block.getTitleValue('VAR'),
-      Blockly.Variables.NAME_TYPE);
+  var varName = Blockly.Lua.variableDB_.getName(
+      block.getFieldValue('VAR'), Blockly.Variables.NAME_TYPE);
   return varName + ' = ' + argument0 + '\n';
-};
-
-Blockly.Lua['variables_set_two'] = function(block) {
-  // Set two variables to a function's return value.
-  // If the input is not a procedure returning mulltiple values, the
-  // user will have been warned both when the connection was made and when
-  // changing to the Lua tab.
-  var value = Blockly.Lua.valueToCode(block, 'VALUE',
-      Blockly.Lua.ORDER_NONE) || 'nil, nil';
-  var varName1 = Blockly.Lua.variableDB_.getName(block.getTitleValue('VAR1'),
-      Blockly.Variables.NAME_TYPE);
-  var varName2 = Blockly.Lua.variableDB_.getName(block.getTitleValue('VAR2'),
-      Blockly.Variables.NAME_TYPE);
-  return varName1 + ', ' + varName2 + ' = ' + value + '\n';
-};
-
-Blockly.Lua['variables_set_three'] = function(block) {
-  // Set three variables to a function's return value.
-  // If the input is not a procedure returning at least three values, the
-  // user will have been warned both when the connection was made and when
-  // changing to the Lua tab.
-  var value = Blockly.Lua.valueToCode(block, 'VALUE',
-      Blockly.Lua.ORDER_NONE) || 'nil, nil, nil';
-  var varName1 = Blockly.Lua.variableDB_.getName(block.getTitleValue('VAR1'),
-      Blockly.Variables.NAME_TYPE);
-  var varName2 = Blockly.Lua.variableDB_.getName(block.getTitleValue('VAR2'),
-      Blockly.Variables.NAME_TYPE);
-  var varName3 = Blockly.Lua.variableDB_.getName(block.getTitleValue('VAR3'),
-      Blockly.Variables.NAME_TYPE);
-  return varName1 + ', ' + varName2 + ', ' + varName3 + ' = ' + value + '\n';
 };

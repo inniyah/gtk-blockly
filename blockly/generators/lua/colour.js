@@ -1,8 +1,9 @@
 /**
+ * @license
  * Visual Blocks Language
  *
- * Copyright 2012 Google Inc.
- * http://blockly.googlecode.com/
+ * Copyright 2016 Google Inc.
+ * https://developers.google.com/blockly/
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +20,7 @@
 
 /**
  * @fileoverview Generating Lua for colour blocks.
- * @author ellen.spertus@gmail.com (Ellen Spertus)
+ * @author rodrigoq@google.com (Rodrigo Queiro)
  */
 'use strict';
 
@@ -30,7 +31,7 @@ goog.require('Blockly.Lua');
 
 Blockly.Lua['colour_picker'] = function(block) {
   // Colour picker.
-  var code = '\'' + block.getTitleValue('COLOUR') + '\'';
+  var code = '\'' + block.getFieldValue('COLOUR') + '\'';
   return [code, Blockly.Lua.ORDER_ATOMIC];
 };
 
@@ -41,21 +42,21 @@ Blockly.Lua['colour_random'] = function(block) {
 };
 
 Blockly.Lua['colour_rgb'] = function(block) {
-  // Compose a colour from RGB components.
+  // Compose a colour from RGB components expressed as percentages.
   var functionName = Blockly.Lua.provideFunction_(
       'colour_rgb',
-      [ 'function ' + Blockly.Lua.FUNCTION_NAME_PLACEHOLDER_ + '(r, g, b)',
-        '  r = math.floor(math.min(100, math.max(0, r)) * 2.55 + .5)',
-        '  g = math.floor(math.min(100, math.max(0, g)) * 2.55 + .5)',
-        '  b = math.floor(math.min(100, math.max(0, b)) * 2.55 + .5)',
-        '  return string.format("#%02x%02x%02x", (r, g, b)',
-        'end']);
+      ['function ' + Blockly.Lua.FUNCTION_NAME_PLACEHOLDER_ + '(r, g, b)',
+       '  r = math.floor(math.min(100, math.max(0, r)) * 2.55 + .5)',
+       '  g = math.floor(math.min(100, math.max(0, g)) * 2.55 + .5)',
+       '  b = math.floor(math.min(100, math.max(0, b)) * 2.55 + .5)',
+       '  return string.format("#%02x%02x%02x", r, g, b)',
+       'end']);
   var r = Blockly.Lua.valueToCode(block, 'RED',
-                                     Blockly.Lua.ORDER_NONE) || 0;
+      Blockly.Lua.ORDER_NONE) || 0;
   var g = Blockly.Lua.valueToCode(block, 'GREEN',
-                                     Blockly.Lua.ORDER_NONE) || 0;
+      Blockly.Lua.ORDER_NONE) || 0;
   var b = Blockly.Lua.valueToCode(block, 'BLUE',
-                                     Blockly.Lua.ORDER_NONE) || 0;
+      Blockly.Lua.ORDER_NONE) || 0;
   var code = functionName + '(' + r + ', ' + g + ', ' + b + ')';
   return [code, Blockly.Lua.ORDER_HIGH];
 };
@@ -65,7 +66,7 @@ Blockly.Lua['colour_blend'] = function(block) {
   var functionName = Blockly.Lua.provideFunction_(
       'colour_blend',
       ['function ' + Blockly.Lua.FUNCTION_NAME_PLACEHOLDER_ +
-          '(colour1, colour2, ratio)',
+           '(colour1, colour2, ratio)',
        '  local r1 = tonumber(string.sub(colour1, 2, 3), 16)',
        '  local r2 = tonumber(string.sub(colour2, 2, 3), 16)',
        '  local g1 = tonumber(string.sub(colour1, 4, 5), 16)',
