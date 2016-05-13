@@ -362,7 +362,7 @@ goog.html.SafeHtml.AttributeValue;
  *
  * @param {string} tagName The name of the tag. Only tag names consisting of
  *     [a-zA-Z0-9-] are allowed. Tag names documented above are disallowed.
- * @param {!Object<string, ?goog.html.SafeHtml.AttributeValue>=} opt_attributes
+ * @param {?Object<string, ?goog.html.SafeHtml.AttributeValue>=} opt_attributes
  *     Mapping from attribute names to their values. Only attribute names
  *     consisting of [a-zA-Z0-9-] are allowed. Value of null or undefined causes
  *     the attribute to be omitted.
@@ -376,14 +376,27 @@ goog.html.SafeHtml.AttributeValue;
  * @throws {goog.asserts.AssertionError} If content for void tag is provided.
  */
 goog.html.SafeHtml.create = function(tagName, opt_attributes, opt_content) {
+  goog.html.SafeHtml.verifyTagName(tagName);
+  return goog.html.SafeHtml.createSafeHtmlTagSecurityPrivateDoNotAccessOrElse(
+      tagName, opt_attributes, opt_content);
+};
+
+
+/**
+ * Verifies if the tag name is valid and if it doesn't change the context.
+ * E.g. STRONG is fine but SCRIPT throws because it changes context. See
+ * goog.html.SafeHtml.create for an explanation of allowed tags.
+ * @param {string} tagName
+ * @throws {Error} If invalid tag name is provided.
+ * @package
+ */
+goog.html.SafeHtml.verifyTagName = function(tagName) {
   if (!goog.html.SafeHtml.VALID_NAMES_IN_TAG_.test(tagName)) {
     throw Error('Invalid tag name <' + tagName + '>.');
   }
   if (tagName.toUpperCase() in goog.html.SafeHtml.NOT_ALLOWED_TAG_NAMES_) {
     throw Error('Tag name <' + tagName + '> is not allowed for SafeHtml.');
   }
-  return goog.html.SafeHtml.createSafeHtmlTagSecurityPrivateDoNotAccessOrElse(
-      tagName, opt_attributes, opt_content);
 };
 
 
@@ -399,11 +412,11 @@ goog.html.SafeHtml.create = function(tagName, opt_attributes, opt_content) {
  *
  * @see https://developer.mozilla.org/en/docs/Web/HTML/Element/iframe#attr-sandbox
  *
- * @param {goog.html.TrustedResourceUrl=} opt_src The value of the src
+ * @param {?goog.html.TrustedResourceUrl=} opt_src The value of the src
  *     attribute. If null or undefined src will not be set.
- * @param {goog.html.SafeHtml=} opt_srcdoc The value of the srcdoc attribute.
+ * @param {?goog.html.SafeHtml=} opt_srcdoc The value of the srcdoc attribute.
  *     If null or undefined srcdoc will not be set.
- * @param {!Object<string, ?goog.html.SafeHtml.AttributeValue>=} opt_attributes
+ * @param {?Object<string, ?goog.html.SafeHtml.AttributeValue>=} opt_attributes
  *     Mapping from attribute names to their values. Only attribute names
  *     consisting of [a-zA-Z0-9-] are allowed. Value of null or undefined causes
  *     the attribute to be omitted.
@@ -502,7 +515,7 @@ goog.html.SafeHtml.canUseSandboxIframe = function() {
  * Creates a SafeHtml representing a script tag with the src attribute.
  * @param {!goog.html.TrustedResourceUrl} src The value of the src
  * attribute.
- * @param {!Object<string, ?goog.html.SafeHtml.AttributeValue>=}
+ * @param {?Object<string, ?goog.html.SafeHtml.AttributeValue>=}
  * opt_attributes
  *     Mapping from attribute names to their values. Only attribute names
  *     consisting of [a-zA-Z0-9-] are allowed. Value of null or undefined
@@ -530,7 +543,7 @@ goog.html.SafeHtml.createScriptSrc = function(src, opt_attributes) {
  * @param {!goog.html.SafeStyleSheet|!Array<!goog.html.SafeStyleSheet>}
  *     styleSheet Content to put inside the tag. Array elements are
  *     concatenated.
- * @param {!Object<string, ?goog.html.SafeHtml.AttributeValue>=} opt_attributes
+ * @param {?Object<string, ?goog.html.SafeHtml.AttributeValue>=} opt_attributes
  *     Mapping from attribute names to their values. Only attribute names
  *     consisting of [a-zA-Z0-9-] are allowed. Value of null or undefined causes
  *     the attribute to be omitted.
@@ -682,7 +695,7 @@ goog.html.SafeHtml.getStyleValue_ = function(value) {
  * optional attributes and optional content.
  * @param {!goog.i18n.bidi.Dir} dir Directionality.
  * @param {string} tagName
- * @param {!Object<string, ?goog.html.SafeHtml.AttributeValue>=} opt_attributes
+ * @param {?Object<string, ?goog.html.SafeHtml.AttributeValue>=} opt_attributes
  * @param {!goog.html.SafeHtml.TextOrHtml_|
  *     !Array<!goog.html.SafeHtml.TextOrHtml_>=} opt_content
  * @return {!goog.html.SafeHtml} The SafeHtml content with the tag.
@@ -792,7 +805,7 @@ goog.html.SafeHtml.prototype.initSecurityPrivateDoNotAccessOrElse_ = function(
  * Like create() but does not restrict which tags can be constructed.
  *
  * @param {string} tagName Tag name. Set or validated by caller.
- * @param {!Object<string, ?goog.html.SafeHtml.AttributeValue>=} opt_attributes
+ * @param {?Object<string, ?goog.html.SafeHtml.AttributeValue>=} opt_attributes
  * @param {(!goog.html.SafeHtml.TextOrHtml_|
  *     !Array<!goog.html.SafeHtml.TextOrHtml_>)=} opt_content
  * @return {!goog.html.SafeHtml}
@@ -804,20 +817,7 @@ goog.html.SafeHtml.createSafeHtmlTagSecurityPrivateDoNotAccessOrElse = function(
     tagName, opt_attributes, opt_content) {
   var dir = null;
   var result = '<' + tagName;
-
-  if (opt_attributes) {
-    for (var name in opt_attributes) {
-      if (!goog.html.SafeHtml.VALID_NAMES_IN_TAG_.test(name)) {
-        throw Error('Invalid attribute name "' + name + '".');
-      }
-      var value = opt_attributes[name];
-      if (!goog.isDefAndNotNull(value)) {
-        continue;
-      }
-      result +=
-          ' ' + goog.html.SafeHtml.getAttrNameAndValue_(tagName, name, value);
-    }
-  }
+  result += goog.html.SafeHtml.stringifyAttributes(tagName, opt_attributes);
 
   var content = opt_content;
   if (!goog.isDefAndNotNull(content)) {
@@ -853,9 +853,37 @@ goog.html.SafeHtml.createSafeHtmlTagSecurityPrivateDoNotAccessOrElse = function(
 
 
 /**
+ * Creates a string with attributes to insert after tagName.
+ * @param {string} tagName
+ * @param {?Object<string, ?goog.html.SafeHtml.AttributeValue>=} opt_attributes
+ * @return {string} Returns an empty string if there are no attributes, returns
+ *     a string starting with a space otherwise.
+ * @throws {Error} If attribute value is unsafe for the given tag and attribute.
+ * @package
+ */
+goog.html.SafeHtml.stringifyAttributes = function(tagName, opt_attributes) {
+  var result = '';
+  if (opt_attributes) {
+    for (var name in opt_attributes) {
+      if (!goog.html.SafeHtml.VALID_NAMES_IN_TAG_.test(name)) {
+        throw Error('Invalid attribute name "' + name + '".');
+      }
+      var value = opt_attributes[name];
+      if (!goog.isDefAndNotNull(value)) {
+        continue;
+      }
+      result +=
+          ' ' + goog.html.SafeHtml.getAttrNameAndValue_(tagName, name, value);
+    }
+  }
+  return result;
+};
+
+
+/**
  * @param {!Object<string, string>} fixedAttributes
  * @param {!Object<string, string>} defaultAttributes
- * @param {!Object<string, ?goog.html.SafeHtml.AttributeValue>=} opt_attributes
+ * @param {?Object<string, ?goog.html.SafeHtml.AttributeValue>=} opt_attributes
  *     Optional attributes passed to create*().
  * @return {!Object<string, ?goog.html.SafeHtml.AttributeValue>}
  * @throws {Error} If opt_attributes contains an attribute with the same name

@@ -26,11 +26,12 @@ goog.provide('goog.fx.Animation.State');
 goog.provide('goog.fx.AnimationEvent');
 
 goog.require('goog.array');
+goog.require('goog.asserts');
 goog.require('goog.events.Event');
-goog.require('goog.fx.Transition');  // Unreferenced: interface
+goog.require('goog.fx.Transition');
 goog.require('goog.fx.TransitionBase');
 goog.require('goog.fx.anim');
-goog.require('goog.fx.anim.Animated');  // Unreferenced: interface
+goog.require('goog.fx.anim.Animated');
 
 
 
@@ -408,7 +409,7 @@ goog.fx.Animation.prototype.cycle = function(now) {
 
 /**
  * Calculates current coordinates, based on the current state.  Applies
- * the accelleration function if it exists.
+ * the acceleration function if it exists.
  * @param {number} t Percentage of the way through the animation as a decimal.
  * @private
  */

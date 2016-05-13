@@ -54,6 +54,7 @@ goog.forwardDeclare('goog.ui.ac.RenderOptions');
  *
  * @constructor
  * @extends {goog.events.EventTarget}
+ * @suppress {underscore}
  */
 goog.ui.ac.AutoComplete = function(matcher, renderer, selectionHandler) {
   goog.events.EventTarget.call(this);
@@ -124,7 +125,7 @@ goog.ui.ac.AutoComplete = function(matcher, renderer, selectionHandler) {
 
   /**
    * Id of the first row in autocomplete menu. Note that new ids are assigned
-   * everytime new suggestions are fetched.
+   * every time new suggestions are fetched.
    *
    * TODO(chrishenry): Figure out what subclass does with this value
    * and whether we should expose a more proper API.

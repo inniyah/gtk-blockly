@@ -214,6 +214,22 @@ function testPercentAndPerMillAdvance() {
   assertEquals(4, pos[0]);
 }
 
+function testPercentAndPerMillParsing() {
+  var implicitFmt = new goog.i18n.NumberFormat('0;(0)');
+  assertEquals(123 / 100, implicitFmt.parse("123%"));
+  assertEquals(-123 / 100, implicitFmt.parse("(123%)"));
+  assertEquals(123 / 1000, implicitFmt.parse("123‰"));
+  assertEquals(-123 / 1000, implicitFmt.parse("(123‰)"));
+
+  var explicitFmtPercent = new goog.i18n.NumberFormat('0%;(0%)');
+  assertEquals(123 / 100, explicitFmtPercent.parse("123%"));
+  assertEquals(-123 / 100, explicitFmtPercent.parse("(123%)"));
+
+  var explicitFmtPermill = new goog.i18n.NumberFormat('0‰;(0‰)');
+  assertEquals(123 / 1000, explicitFmtPermill.parse("123‰"));
+  assertEquals(-123 / 1000, explicitFmtPermill.parse("(123‰)"));
+}
+
 function testInfinityParse() {
   var value;
   var fmt = new goog.i18n.NumberFormat('0.0;(0.0)');
@@ -1061,6 +1077,16 @@ function testCompactWithoutSignificant2() {
   assertEquals('123.46K', fmt.format(123456.7));
   assertEquals('999.99K', fmt.format(999994));
   assertEquals('1M', fmt.format(999995));
+}
+
+function testCompactFallbacks() {
+  var cdfSymbols = {COMPACT_DECIMAL_SHORT_PATTERN: {'1000': {'other': '0K'}}};
+
+  goog.i18n.CompactNumberFormatSymbols = cdfSymbols;
+  var fmt =
+      new goog.i18n.NumberFormat(goog.i18n.NumberFormat.Format.COMPACT_LONG);
+  var str = fmt.format(220000000000000);
+  assertEquals('220,000,000,000K', str);
 }
 
 function testShowTrailingZerosWithSignificantDigits() {

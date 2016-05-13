@@ -767,7 +767,7 @@ goog.module.ModuleManager.prototype.processModulesForLoad_ = function(ids) {
  */
 goog.module.ModuleManager.prototype.getNotYetLoadedTransitiveDepIds_ = function(
     id) {
-  // NOTE(user): We want the earliest occurrance of a module, not the first
+  // NOTE(user): We want the earliest occurrence of a module, not the first
   // dependency we find. Therefore we strip duplicates at the end rather than
   // during.  See the tests for concrete examples.
   var ids = [];
@@ -1276,7 +1276,6 @@ goog.module.ModuleManager.prototype.loadNextModules_ = function() {
     // Remove modules that are already loaded.
     var nextIds = goog.array.filter(
         this.requestedModuleIdsQueue_.shift(),
-        /** @param {string} id The module id. */
         function(id) { return !this.getModuleInfo(id).isLoaded(); }, this);
     if (nextIds.length > 0) {
       this.loadModules_(nextIds);

@@ -495,6 +495,8 @@ goog.net.BrowserTestChannel.prototype.onRequestData = function(
  * Callback from ChannelRequest that indicates a request has completed.
  *
  * @param {goog.net.ChannelRequest} req  The request object.
+ * @suppress {missingRequire} Cannot depend on goog.net.BrowserChannel because
+ *     it creates a circular dependency.
  */
 goog.net.BrowserTestChannel.prototype.onRequestComplete = function(req) {
   this.lastStatusCode_ = this.request_.getLastStatusCode();
@@ -554,6 +556,7 @@ goog.net.BrowserTestChannel.prototype.onRequestComplete = function(req) {
       this.channel_.testConnectionFinished(this, true);
     } else {
       this.channelDebug_.debug('Test connection failed; not using streaming');
+      /** @suppress {missingRequire} Circular dep */
       goog.net.BrowserChannel.notifyStatEvent(
           goog.net.BrowserChannel.Stat.PROXY);
       this.channel_.testConnectionFinished(this, false);

@@ -45,6 +45,7 @@ goog.require('goog.ui.IdGenerator');
  * @param {goog.dom.DomHelper=} opt_domHelper Optional DOM helper.
  * @constructor
  * @extends {goog.events.EventTarget}
+ * @suppress {underscore}
  */
 goog.ui.Component = function(opt_domHelper) {
   goog.events.EventTarget.call(this);
@@ -421,7 +422,7 @@ goog.ui.Component.getStateTransitionEvent = function(state, isEntering) {
 
 /**
  * Set the default right-to-left value. This causes all component's created from
- * this point foward to have the given value. This is useful for cases where
+ * this point forward to have the given value. This is useful for cases where
  * a given page is always in one directionality, avoiding unnecessary
  * right to left determinations.
  * @param {?boolean} rightToLeft Whether the components should be rendered

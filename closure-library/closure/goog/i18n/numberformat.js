@@ -496,7 +496,11 @@ goog.i18n.NumberFormat.prototype.parseNumber_ = function(text, pos) {
       sawExponent = true;
     } else if (ch == '+' || ch == '-') {
       normalizedText += ch;
-    } else if (ch == goog.i18n.NumberFormatSymbols.PERCENT.charAt(0)) {
+    } else if (
+        this.multiplier_ == 1 &&
+        ch == goog.i18n.NumberFormatSymbols.PERCENT.charAt(0)) {
+      // Parse the percent character as part of the number only when it's
+      // not already included in the pattern.
       if (scale != 1) {
         break;
       }
@@ -505,7 +509,11 @@ goog.i18n.NumberFormat.prototype.parseNumber_ = function(text, pos) {
         pos[0]++;  // eat this character if parse end here
         break;
       }
-    } else if (ch == goog.i18n.NumberFormatSymbols.PERMILL.charAt(0)) {
+    } else if (
+        this.multiplier_ == 1 &&
+        ch == goog.i18n.NumberFormatSymbols.PERMILL.charAt(0)) {
+      // Parse the permill character as part of the number only when it's
+      // not already included in the pattern.
       if (scale != 1) {
         break;
       }
@@ -518,6 +526,13 @@ goog.i18n.NumberFormat.prototype.parseNumber_ = function(text, pos) {
       break;
     }
   }
+
+  // Scale the number when the percent/permill character was included in
+  // the pattern.
+  if (this.multiplier_ != 1) {
+    scale = this.multiplier_;
+  }
+
   return parseFloat(normalizedText) / scale;
 };
 
@@ -1304,11 +1319,20 @@ goog.i18n.NumberFormat.prototype.getUnitFor_ = function(base, plurality) {
       goog.i18n.CompactNumberFormatSymbols.COMPACT_DECIMAL_SHORT_PATTERN :
       goog.i18n.CompactNumberFormatSymbols.COMPACT_DECIMAL_LONG_PATTERN;
 
+  if (!goog.isDefAndNotNull(table)) {
+    table = goog.i18n.CompactNumberFormatSymbols.COMPACT_DECIMAL_SHORT_PATTERN;
+  }
+
   if (base < 3) {
     return goog.i18n.NumberFormat.NULL_UNIT_;
   } else {
     base = Math.min(14, base);
     var patterns = table[Math.pow(10, base)];
+    var previousNonNullBase = base - 1;
+    while (!patterns && previousNonNullBase >= 3) {
+      patterns = table[Math.pow(10, previousNonNullBase)];
+      previousNonNullBase--;
+    }
     if (!patterns) {
       return goog.i18n.NumberFormat.NULL_UNIT_;
     }
@@ -1326,7 +1350,7 @@ goog.i18n.NumberFormat.prototype.getUnitFor_ = function(base, plurality) {
     return {
       prefix: parts[1],
       suffix: parts[3],
-      divisorBase: base - (parts[2].length - 1)
+      divisorBase: (previousNonNullBase + 1) - (parts[2].length - 1)
     };
   }
 };
